@@ -1,9 +1,9 @@
 # 🎸 效果器電路實驗室 · Pedal Circuit Lab
 
-> 單一 HTML 檔的吉他效果器電路學習工具：看得到、聽得到、算得出來。
-> 不用安裝、不用編譯、不需要網路，用瀏覽器打開就能玩。
+ 單一 HTML 檔的吉他效果器電路學習工具：看得到、聽得到、算得出來。
+ 不用安裝、不用編譯、不需要網路，用瀏覽器打開就能玩。
 
-**版本 1.8.2** · 專案代號 `0x5_CORE_ENGINE` · by **BUFFER OVERFLOW CREW**
+**版本 1.8.2** · 專案代號 `BOC_Pedal_Circuit_Lab` · by **BUFFER OVERFLOW CREW**
 
 ---
 
@@ -13,7 +13,7 @@ Pedal Circuit Lab 把經典破音效果器（Overdrive / Distortion / Fuzz）的
 
 適合：
 
-- 想搞懂 TS808、RAT、Big Muff 為什麼聽起來不一樣的吉他手 / DIY 玩家
+- 想搞懂效果器為什麼聽起來不一樣的DIY 玩家
 - 學習運放、RC 濾波、削波與諧波失真的學生
 - 想要隨手查電阻色環、分壓、LED 限流電阻的人
 
@@ -29,7 +29,6 @@ Pedal Circuit Lab 把經典破音效果器（Overdrive / Distortion / Fuzz）的
 | 計算工具 | **計算工具** | 19 張計算卡片（見下方） |
 | 計算工具 | **SPICE 模擬** | 內建網表模擬器：直流工作點、時域波形、頻率響應，還能「試聽」結果 |
 | 關於 | **工作人員** | 團隊名單 |
-| Lain | **Lain** | 彩蛋 🤫 |
 
 ### 🎛️ 互動模擬器
 
@@ -98,13 +97,14 @@ C1 out 0 100n
 ## 👥 團隊
 
 **BUFFER OVERFLOW CREW**
+    From Taiwan 
 
 | 成員 | 負責 |
 | --- | --- |
 | KATO | 外觀、計算工具 |
 | STEAKqwq | 電路、電阻、範例 |
 | Hazuki Saki | 音訊、旋鈕、Delay |
-| RET2L!BC | 導覽、彩蛋、解析 |
+| RET2L!BC | 導覽、解析 |
 | Dr.GG | 求解引擎、波形 |
 
 ## 📄 授權
