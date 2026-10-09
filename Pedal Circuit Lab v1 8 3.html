@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<!--
+ BUFFER OVERFLOW CREW
+ HazukiSaki | KATO | STEAKqwq | RET2L!BC | Dr.GG
+ PROJECT: BOC_Pedal_Circuit_Lab
+ VERSION: 1.8.3
+ OWNERS: KATO=外觀/計算工具 | STEAKqwq=電路/電阻/範例 | Hazuki Saki=音訊/旋鈕/Delay | RET2L!BC=導覽/彩蛋/解析 | Dr.GG=求解引擎/波形
+ UPDATED: 2026-10-09 16:16 (UTC+8)
+ WATERMARK: BUFFER OVERFLOW CREW | BOC_Pedal_Circuit_Lab | code-level only, no visual output
+-->
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="author" content="BUFFER OVERFLOW CREW">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>效果器電路實驗室 v1.8.3 | Pedal Circuit Lab</title>
+<style>
+/* (c) BUFFER OVERFLOW CREW | BOC_Pedal_Circuit_Lab */
+/* [KATO] 顏色變數，淺色為預設，深色在後面覆蓋 */
+:root{--bg:#e9e9e9;--p:#fff;--c:#e4e4e4;--cv:#fff;--bd:#888;--tx:#111;--mu:#555;--t:#0a5fa8;--o:#c0392b;--g:#1a7f37;--bt:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="dark"]{--bg:#1a1a1a;--p:#262626;--c:#383838;--cv:#111;--bd:#777;--tx:#eee;--mu:#aaa;--t:#4fb3ff;--o:#ff7a66;--g:#5fd17f;--bt:#000}
+:root.lain[data-theme="dark"]{--tx:#b388ff;--mu:#9575cd;--t:#c39bff;--o:#e1a3ff;--g:#b388ff;--bt:#120a22}
+#flash{position:fixed;inset:0;background:#b388ff;opacity:0;pointer-events:none;z-index:98}
+#flash.go{animation:fl .6s steps(1,end)}
+@keyframes fl{0%{opacity:.85}15%{opacity:0}30%{opacity:.6}45%{opacity:0}60%{opacity:.4}75%{opacity:0}100%{opacity:0}}
+#lainWin{position:fixed;z-index:99;width:min(94vw,360px);background:#000;border:2px solid var(--tx);color:var(--tx)}
+#lainWin .tb{display:flex;justify-content:space-between;align-items:center;background:var(--tx);color:#000;padding:2px 6px;font:bold 12px 'Courier New',monospace;cursor:move;touch-action:none;user-select:none}
+#lainWin .tb button{font:bold 12px 'Courier New',monospace;background:#000;color:var(--tx);border:1px solid #000;cursor:pointer;padding:0 6px}
+#lainWin pre{margin:0;padding:8px;font:7px/1 'DejaVu Sans Mono','Courier New',monospace;height:250px;overflow:hidden;display:flex;align-items:center;justify-content:center;white-space:pre;color:var(--tx)}
+#lainWin .ft{font:11px 'Courier New',monospace;padding:2px 6px;border-top:1px solid var(--tx);display:flex;justify-content:space-between}
+#lainWin.glitch pre{transform:translateX(2px);text-shadow:-2px 0 #f0f,2px 0 #0ff}
+#lainIntro{position:fixed;inset:0;z-index:300;background:#9b6dff;color:#000;display:flex;align-items:center;justify-content:center;font:bold clamp(22px,7vw,56px) 'Courier New',monospace;letter-spacing:.06em;transition:opacity .4s;cursor:pointer}
+#lainIntro.hide{display:none}
+#lainIntro.out{opacity:0;pointer-events:none}
+#lainIntro i{display:inline-block;width:.55em;height:1em;background:#000;margin-left:3px;animation:lainBl 1s steps(1) infinite}
+@keyframes lainBl{50%{opacity:0}}
+.lainTxt{display:inline-block;text-align:left;margin:14px 0 0;font:12px/1.5 'DejaVu Sans Mono','Courier New',monospace;color:var(--tx);overflow-x:auto;max-width:100%}
+input[type=number],input[type=text]{width:100px;background:var(--p);color:var(--tx);border:1px solid var(--bd);padding:2px 4px;font:13px 'Courier New',monospace}
+.o{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted var(--bd);padding:2px 0;font-size:13px}.o b{font-family:'Courier New',monospace;text-align:right}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px;font-size:13px}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 Arial,"Microsoft JhengHei","PingFang TC",sans-serif}
+.mono,.kl,.kv,.fm,.st b,.big,table .mono{font-family:"Courier New",monospace}
+header{background:var(--p);border-bottom:2px solid var(--bd)}
+.wrap{max-width:1000px;margin:0 auto;padding:10px 12px}
+.hd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+h1{font-size:20px;margin:0}h1 small{font-size:12px;color:var(--mu);font-weight:normal;margin-left:6px}
+.sub{font-size:12px;color:var(--mu)}
+.tabs{display:flex;gap:2px;overflow-x:auto;max-width:100%}
+.tabs button,.seg button,.btn{font:inherit;font-size:13px;color:var(--tx);background:var(--c);border:1px solid var(--bd);padding:4px 10px;cursor:pointer;white-space:nowrap;border-radius:0}
+.tabs button.on,.seg button.on{background:var(--tx);color:var(--p);font-weight:bold}
+.card{background:var(--p);border:1px solid var(--bd);padding:10px 12px;margin-bottom:10px}
+.card h3{margin:0 0 8px;font-size:15px;border-bottom:1px solid var(--bd);padding-bottom:3px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.btn.ghost{background:var(--c);color:var(--tx)}
+.btn:not(.ghost){background:var(--t);color:var(--bt);border-color:var(--t)}
+select{background:var(--p);color:var(--tx);border:1px solid var(--bd);padding:2px;font:inherit;font-size:13px}
+.led{width:10px;height:10px;border-radius:50%;background:#999;display:inline-block;border:1px solid #444}
+.led.on{background:#e22}.led.t.on{background:#2c2}
+/* [KATO] 畫布共用樣式 */
+canvas{width:100%;height:280px;display:block;background:var(--cv);border:1px solid var(--bd)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-top:8px}
+.st{background:var(--c);border:1px solid var(--bd);padding:4px 8px}
+.st span{display:block;font-size:12px;color:var(--mu)}.st b{font-size:14px}
+.knobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;text-align:center}
+.kn{width:70px;height:70px;margin:6px auto;border-radius:50%;background:var(--c);border:3px solid var(--tx);cursor:ns-resize;touch-action:none;position:relative;outline:none}
+.kn:focus{outline:2px dashed var(--t);outline-offset:3px}
+.kn i{position:absolute;inset:0}.kn i:before{content:"";position:absolute;left:calc(50% - 2px);top:3px;width:4px;height:24px;background:var(--tx)}
+.kl{font-size:12px;font-weight:bold}.kv{font-size:13px;color:var(--t)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}.seg button{flex:1;min-width:92px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.foot{width:56px;height:56px;border-radius:50%;border:3px solid var(--tx);background:var(--c);cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;background:var(--c);padding:5px;border:1px solid var(--bd)}
+td{padding:5px;border:1px solid var(--bd);vertical-align:top}tr.bom{cursor:pointer}tr.bom:hover{background:var(--c)}tr.bom.on{background:var(--c);font-weight:bold}
+.sl{width:100%}.big{font-size:20px}
+.note{font-size:12px;color:var(--mu);margin:5px 0}.fm{font-size:13px;color:var(--t)}
+.hide{display:none}svg text{font-family:"Courier New",monospace}
+.sw{overflow-x:auto}
+/* [KATO] 頂部導覽樣式 (๑•̀ㅂ•́)و✧ */
+.navs{display:flex;flex-direction:column;gap:3px;max-width:100%;min-width:0}
+.navs .subs button{font-size:12px;padding:2px 10px;background:var(--p)}
+.navs .subs button.on{background:var(--tx);color:var(--p)}
+.grp{margin:16px 0 8px;font-size:16px}
+#tab-calc .grid2{margin-top:0}
+#tab-calc [data-cc="ckt"]{order:1}#tab-calc [data-cc="res"]{order:2}#tab-calc [data-cc="pwr"]{order:3}#tab-calc [data-cc="sig"]{order:4}#tab-calc [data-cc="unit"]{order:5}.sw3{display:inline-block;width:14px;height:14px;border:1px solid var(--bd);vertical-align:middle;margin-left:3px}
+</style>
+</head>
+<body>
+<!-- [KATO] 頁首：標題、導覽、主題按鈕 -->
+<header><div class="wrap hd">
+<div><h1>效果器電路實驗室<small>Pedal Circuit Lab v1.8.3</small></h1></div>
+<div class="navs"><nav class="tabs" id="cats"></nav><nav class="tabs subs" id="tabs"></nav></div>
+<button class="btn ghost" id="themeBtn" onclick="toggleTheme()" aria-label="切換主題" >黑/白底</button>
+</div></header>
+<div id="flash"></div>
+<div id="lainIntro" class="hide" role="dialog" aria-label="present day"><span id="lainTx"></span><i></i></div>
+<div id="lainWin" class="hide" role="dialog" aria-label="lain.exe">
+ <div class="tb" id="lainTb"><span>lain.exe</span><button onclick="lainClose()" aria-label="關閉">X</button></div>
+ <pre id="lainPre"></pre>
+ <div class="ft"><span id="lainFr">frame 1/3</span><span>wired</span></div>
+</div>
+<!-- [KATO] 主內容區，每個 section 是一個分頁 -->
+<main class="wrap">
+
+<!-- [Hazuki Saki] 互動模擬器：發聲、示波器、旋鈕 🎸 -->
+<section id="tab-sim">
+<h3 class="grp" style="margin-top:0">發聲與開關</h3>
+<div class="card row">
+ <div class="row">
+  <button class="btn" id="playBtn" onclick="toggleAudio()">開始發聲</button>
+  <label class="sub">訊號源 <select id="src" onchange="changeSrc()"></select></label>
+  <span class="sub"><span class="led t" id="aLed"></span> <span id="aTxt">WebAudio：靜音</span></span>
+ </div>
+ <button class="btn ghost" id="byBtn" onclick="toggleBypass()">效果：ON</button>
+</div>
+
+<h3 class="grp">即時量測</h3>
+<div class="card">
+ <div class="row"><h3>雙通道示波器（依電路模型計算）</h3>
+ <span class="mono sub"><b style="color:var(--t)">━ CH1 輸入 100 mV/div</b> &nbsp; <b style="color:var(--o)">━ CH2 剪峰級輸出 500 mV/div</b> &nbsp; 2 ms/div</span></div>
+ <canvas id="scope"></canvas>
+ <div class="stats">
+  <div class="st"><span>增益級電壓增益</span><b id="sGain">—</b></div>
+  <div class="st"><span>增益級 Rf</span><b id="sRf">—</b></div>
+  <div class="st"><span>削峰電壓 (Vf)</span><b id="sVf" style="color:var(--t)">—</b></div>
+  <div class="st"><span>低頻轉折 (4.7kΩ·47nF)</span><b id="sHp">—</b></div>
+  <div class="st"><span>輸出峰值 / THD</span><b id="sThd" style="color:var(--o)">—</b></div>
+ </div>
+</div>
+
+<div class="card"><div class="row"><h3 style="margin:0">整機頻率響應</h3><span class="mono sub"><b style="color:var(--t)">━ 總和</b> <b style="color:var(--o)">━ 增益級</b> <b style="color:var(--g)">━ Tone</b> <b style="color:var(--mu)">╌ 輸入高通</b></span></div>
+ <canvas id="resp" style="height:210px;margin-top:8px"></canvas>
+ <div class="stats"><div class="st"><span>1 kHz 增益</span><b id="rG1">—</b></div><div class="st"><span>峰值增益</span><b id="rPk">—</b></div><div class="st"><span>輸入高通 / Tone fc</span><b id="rFc">—</b></div></div>
+ <div class="note">小訊號線性響應（未計削峰），旋鈕、模式變動即時更新。TS 含 51 pF 回授電容，輸入耦合取 20 nF/510 kΩ（典型值）；RAT 含 560Ω 與 47Ω 兩條增益支路；Big Muff 以平坦增益近似；Tone 為一階近似。</div></div>
+<h3 class="grp">效果器面板</h3>
+<div class="card">
+ <div class="row" style="margin-bottom:8px"><h3 style="margin:0" id="panT">TS-Overdrive 面板</h3><span class="sub">拖曳旋鈕 / 滾輪 / 方向鍵 <span class="led on" id="pLed"></span></span></div>
+ <div class="seg" id="modes" style="margin-bottom:10px"></div><div class="knobs" id="knobs"></div>
+ <div class="grid2" style="margin-top:16px">
+  <div><div class="kl" style="margin-bottom:6px">削峰二極體 (回授環路，反向並聯)</div>
+   <div class="seg" id="diodes"></div></div>
+  <div><div class="row"><span class="kl">吉他輸入電平 (峰值)</span><span class="kv" id="vinV">100 mV</span></div>
+   <input type="range" class="sl" id="vin" min="20" max="500" value="100" oninput="S.vin=+this.value;refresh()">
+   <div class="note">單線圈約 100–200 mV、雙線圈可達 300 mV 以上。</div>
+   <div style="text-align:center;margin-top:6px"><button class="foot" onclick="toggleBypass()" aria-label="腳踏開關"></button></div></div>
+ </div>
+</div>
+</section>
+
+<!-- [STEAKqwq] 電路原理與 BOM -->
+<section id="tab-sch" class="hide">
+ <div class="sw tabs" id="ctabs" style="margin-bottom:14px"></div>
+ <div class="card"><div class="row"><h3 id="cTitle"></h3><span class="sub">點擊下方 BOM 列可高亮對應電路方塊</span></div>
+  <div class="sw"><svg id="svg" viewBox="0 0 800 220" style="width:100%;min-width:620px"></svg></div>
+  <div class="note" id="cNote"></div></div>
+ <div class="card"><h3>物料清單 (BOM)</h3><div class="sw"><table><thead><tr><th>編號</th><th>數值/型號</th><th>類型</th><th>作用</th></tr></thead><tbody id="bom"></tbody></table></div></div>
+</section>
+
+<!-- [Dr.GG] 波形檢視 -->
+<section id="tab-wave" class="hide">
+<h3 class="grp" style="margin-top:0">模型計算 · 時域波形</h3>
+<div class="card"><div class="row"><h3 style="margin:0">波形檢視 Waveform Viewer</h3>
+ <div class="row" style="gap:8px"><label class="sub">波形 <select id="wW" onchange="setWave(this.value)"></select></label> <label class="sub">頻率 <select id="wF" onchange="W.f=+this.value"><option>110</option><option selected>220</option><option>440</option><option>1000</option></select> Hz</label>
+ <label class="sub">時基 <select id="wT" onchange="W.t=+this.value"><option>1</option><option selected>2</option><option>5</option><option>10</option></select> ms/div</label>
+ <button class="btn ghost" onclick="nudge(-1)" title="往前">&lt;</button><button class="btn ghost" id="wFz" onclick="setFz(!W.fz)">凍結</button><button class="btn ghost" onclick="nudge(1)" title="往後">&gt;</button></div></div>
+ <canvas id="w1" style="height:300px;margin-top:10px;cursor:ew-resize;touch-action:pan-y"></canvas>
+ <div class="stats"><div class="st"><span>輸入峰值</span><b id="wIn">—</b></div><div class="st"><span>輸出峰值</span><b id="wOut" style="color:var(--o)">—</b></div><div class="st"><span>壓縮量</span><b id="wCmp">—</b></div><div class="st"><span>Vf 削峰線</span><b id="wVf">—</b></div></div>
+ <div class="note">凍結後可在上方波形左右拖曳、或按 ◀ ▶ 逐格移動，拖曳時會自動凍結。CH1（青）100 mV/div；CH2（紅）500 mV/div，虛線為 ±Vf。波形依目前旋鈕、二極體與輸入電平即時計算。</div></div>
+<div class="card"><div class="row"><h3 style="margin:0">靜態波形（固定觸發，不會移動）</h3><span class="sub">滑動/點選畫面可讀取游標數值</span></div>
+ <canvas id="w5" style="height:300px;margin-top:10px;cursor:crosshair;touch-action:none"></canvas>
+ <div class="stats"><div class="st"><span>游標時間</span><b id="cT">—</b></div><div class="st"><span>輸入電壓</span><b id="cI" style="color:var(--t)">—</b></div><div class="st"><span>輸出電壓</span><b id="cO" style="color:var(--o)">—</b></div></div>
+ <div class="note">從零交越點起始，頻率與時基沿用上方設定；改變旋鈕時波形形狀會更新，但不會捲動。</div></div>
+<!-- [KATO] 預設與分享 -->
+<div class="card"><div class="row" style="margin-bottom:8px"><h3 style="margin:0">預設與分享</h3><span class="sub" id="pstMsg"></span></div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input type="text" id="pstName" maxlength="20" placeholder="預設名稱" style="flex:1;min-width:110px"><button class="btn" onclick="pstSave()">儲存目前設定</button><button class="btn ghost" onclick="pstShare()">複製分享連結</button></div>
+ <div id="pstList" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"></div>
+ <div class="note">預設存在這個瀏覽器裡；分享連結會把目前的模式、旋鈕、二極體與訊號源放進網址。</div></div>
+<h3 class="grp">模型計算 · 轉移曲線與諧波</h3>
+<div class="grid2">
+ <div class="card"><h3>轉移曲線（輸入 → 輸出）</h3><canvas id="w2" style="height:260px"></canvas><div class="note">橫軸 ±0.5 V 輸入，縱軸 ±2 V 輸出；藍色區帶為目前輸入電平範圍，虛線為無削峰的線性增益。</div></div>
+ <div class="card"><h3>諧波成分（相對最強成分 dB）</h3><canvas id="w3" style="height:260px"></canvas><div class="note">對稱削峰只產生奇次諧波（青）；偶次（橘）接近 0 屬正常。</div></div>
+</div>
+<h3 class="grp">實際音訊 · WebAudio 擷取</h3>
+<div class="card"><div class="row"><h3 style="margin:0">實際音訊輸出（AnalyserNode）</h3><span class="sub" id="wLive">請先到「互動模擬器」開啟發聲</span></div>
+ <canvas id="w4" style="height:340px;margin-top:10px"></canvas><div class="note">上：實際輸出時域波形；下：頻譜 20 Hz–20 kHz（-100～0 dBFS）。含 Tone 濾波與音量。</div></div>
+<div class="card"><div class="row"><h3 style="margin:0">音訊快照（定格）</h3><button class="btn" onclick="snapshot()">擷取目前畫面</button></div>
+ <canvas id="w6" style="height:340px;margin-top:10px"></canvas><div class="note">發聲中按下按鈕，會把當下的時域波形與頻譜定格保存，可慢慢檢視；再按一次會更新。</div></div>
+</section>
+
+<!-- [RET2L!BC] 工作人員名單 -->
+<section id="tab-crew" class="hide">
+<div class="card"><h3>工作人員 Staff</h3>
+ <div class="sw"><pre id="banner" style="font:9px/1.1 'Courier New',monospace;margin:0 0 6px;color:var(--tx)">██████╗ ██╗   ██╗███████╗███████╗███████╗██████╗ 
+██╔══██╗██║   ██║██╔════╝██╔════╝██╔════╝██╔══██╗
+██████╔╝██║   ██║█████╗  █████╗  █████╗  ██████╔╝
+██╔══██╗██║   ██║██╔══╝  ██╔══╝  ██╔══╝  ██╔══██╗
+██████╔╝╚██████╔╝██║     ██║     ███████╗██║  ██║
+╚═════╝  ╚═════╝ ╚═╝     ╚═╝     ╚══════╝╚═╝  ╚═╝
+
+ ██████╗ ██╗   ██╗███████╗██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
+██╔═══██╗██║   ██║██╔════╝██╔══██╗██╔════╝██║     ██╔═══██╗██║    ██║
+██║   ██║██║   ██║█████╗  ██████╔╝█████╗  ██║     ██║   ██║██║ █╗ ██║
+██║   ██║╚██╗ ██╔╝██╔══╝  ██╔══██╗██╔══╝  ██║     ██║   ██║██║███╗██║
+╚██████╔╝ ╚████╔╝ ███████╗██║  ██║██║     ███████╗╚██████╔╝╚███╔███╔╝
+ ╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═╝╚═╝     ╚══════╝ ╚═════╝  ╚══╝╚══╝</pre></div>
+ <div class="mono" style="text-align:center;font-size:13px;margin:6px 0 10px">░░ BUFFER OVERFLOW CREW ░░</div>
+ <div class="sw"><table>
+  <thead><tr><th>名稱</th><th>語言 / 領域</th><th>代表檔案</th></tr></thead>
+  <tbody class="mono">
+   <tr><td><b>KATO</b> (๑•̀ㅂ•́)و✧</td><td>Py / C++</td><td>Auto-Root-Script.py</td></tr>
+   <tr><td><b>STEAKqwq</b> qwq</td><td>C++ / EMB</td><td>Firmware-Backdoor.bin</td></tr>
+   <tr><td><b>RET2L!BC</b> 🎧</td><td>C++ / PWN</td><td>Stack-Smasher.exploit</td></tr>
+   <tr><td><b>Hazuki Saki</b> 🎸</td><td>C++ / SWIFT</td><td>iOS-Kernel-Bypass.swift</td></tr>
+   <tr><td><b>Dr.GG</b> -_-</td><td>ASM / JAVA</td><td>Raw-Hex-Payload.bin</td></tr>
+  </tbody></table></div>
+ <div class="note">PROJECT: BOC_Pedal_Circuit_Lab · Oops, your stack just overflowed. (๑•̀ㅂ•́)و✧<br>「代表檔案」為團隊自己取的玩笑名稱，網站內沒有這些檔案。</div>
+</div>
+</section>
+
+<!-- [RET2L!BC] Lain -->
+<section id="tab-lain" class="hide">
+<div class="card" style="text-align:center">
+ <div class="sw"><pre style="font:10px/1 'DejaVu Sans Mono','Courier New',monospace;margin:0 auto;display:inline-block;text-align:left;color:var(--tx)">⠀⠀⠀⠀⡌⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠉⠉⢳⠀⠘⠀⠀⠀
+⠀⠀⠀⡸⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠈⡆⠀⡇⠀⠀
+⠀⠀⠀⣳⢺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⠀⠁⠀⡇⠀⠀
+⠀⠀⢀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⢰⠀⡇⠀⠀
+⠀⠀⠈⢸⣿⣿⣿⣿⣿⣿⣿⡟⢸⡏⠀⢸⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠇⠀⠀
+⠀⠀⠀⠸⠛⣿⣿⣿⣿⣟⢻⠀⢸⡇⠀⢸⠀⣿⡇⣿⣿⣿⣿⡟⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢀⠀⠀⠀
+⠀⠀⠀⠀⠀⠈⣿⣿⡏⢉⠙⠓⢾⣙⠀⢸⠀⠏⡇⠟⠻⣿⣿⠃⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⡜⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⣿⢻⣷⠙⣿⣦⣄⡉⠁⠈⠀⠀⠇⠤⠴⠿⢶⣤⣀⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣿⠰⠁⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢹⠈⢿⡈⠛⠛⠛⠋⠀⠀⠀⠀⠀⠀⠀⠾⣧⣀⠉⠙⠲⢿⣏⣿⣿⣿⣿⣿⣏⡄⣿⣿⡟⡀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠈⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⢿⣿⣿⣷⠖⠀⠈⣿⣿⣿⣿⡿⢋⣾⣿⣿⢧⡇⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣆⠀⠀⠀⠀⡔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⣟⣿⣶⣿⣿⣿⡟⠸⡀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢦⡀⠀⠘⠢⠤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡌⣿⣽⣿⣟⠻⠻⠏⠟⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣆⡀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⢞⣿⣿⣿⣿⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⣼⣏⡗⢄⠀⠀⠀⠀⠀⢀⡠⣤⡤⢔⡫⠔⢻⣿⣿⣿⠃⣸⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣠⠴⣪⣵⣾⣿⣿⡇⠀⠉⢲⠒⠒⠚⢀⡩⠴⠒⠉⠀⠀⢸⣿⣿⡇⠀⢸⣄⠑⢄⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⣠⢔⣨⣥⣾⣿⣿⣿⣿⣿⣿⠁⣀⣴⣿⣷⠀⠉⠁⠀⠀⠀⠀⠀⠀⣿⣿⣿⠁⠀⡏⠀⠑⢌⠡⡀⠀⠀⠀⠀⠀
+⢀⣴⡟⠋⠁⣴⣿⣿⣿⣿⣿⣿⣿⣧⣾⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⠀⠀⡇⠀⠀⠀⠱⡘⣆⠀⠀⠀⠀
+⢸⣻⣧⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄⠀⠀⠀⠀⢀⡴⣻⣿⣿⡇⠀⢸⠀⠀⠀⠀⠀⠈⡧⡑⡄⠀⠀
+⢸⢺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠑⠒⢐⣶⣿⣿⣿⣿⣿⣀⣠⡿⠀⠀⠀⠀⠀⣸⠁⠈⢜⢄⠀
+⣘⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣀⡀⣀⣠⠃⠀⠀⠀⠁⢢</pre></div>
+ <div class="mono" style="font-size:18px;margin-top:12px;letter-spacing:1px">Let’s All Love Lain</div>
+ <pre class="lainTxt" aria-hidden="true">𝙻𝚎𝚝'𝚜 𝚊𝚕𝚕 𝚕𝚘𝚟𝚎 𝙻𝚊𝚒𝚗
+𝙻𝚎𝚝'𝚜 𝚊𝚕𝚕 𝚕𝚘𝚟𝚎 𝙻𝚊𝚒𝚗
+𝙻𝚎𝚝'𝚜 𝚊𝚕𝚕 𝚕𝚘𝚟𝚎 𝙻𝚊𝚒𝚗
+𝙻𝚎𝚝'𝚜 𝚊𝚕𝚕 𝚕𝚘𝚟𝚎 𝙻𝚊𝚒𝚗
+𝙻𝚎𝚝'𝚜 𝚊𝚕𝚕 𝚕𝚘𝚟𝚎 𝙻𝚊𝚒𝚗
+                                𝙻𝚊𝚒𝚗
+                                 𝙻𝚊𝚒𝚗
+                                  𝙻𝚊𝚒𝚗
+                                   𝙻𝚊𝚒𝚗
+                                    𝙻𝚊𝚒𝚗
+                                     𝙻𝚊𝚒𝚗
+                                      𝙻𝚊𝚒𝚗
+                                       𝙻𝚊𝚒𝚗
+                                        𝙻𝚊𝚒𝚗</pre>
+ <div style="margin-top:10px"><button class="btn ghost" onclick="lainOpen()">重新開啟視窗</button></div>
+</div>
+</section>
+
+<!-- [RET2L!BC] SPICE 介面：網表輸入、分析選單、結果 -->
+<section id="tab-spice" class="hide">
+<div class="card"><h3>SPICE 電路模擬器</h3>
+ <div class="seg" style="margin-bottom:8px"><button onclick="spEx('ts808')">TS808 範例</button><button onclick="spEx('rc')">RC 低通範例</button></div>
+ <textarea id="spT" spellcheck="false" style="width:100%;height:250px;font:12px/1.4 monospace;background:var(--p);color:var(--tx);border:1px solid var(--bd);padding:8px;box-sizing:border-box"></textarea>
+ <div class="ctl" style="margin-top:8px"><select id="spM"><option value="op">直流工作點</option><option value="tran" selected>時域波形</option><option value="ac">頻率響應</option></select> 觀察節點 <input type="text" id="spN" style="width:120px"> <button class="btn" onclick="spRun()">執行</button> <button class="btn ghost" onclick="spPlay()">試聽</button></div>
+ <div id="spO"></div><canvas id="spC" class="hide" style="height:260px"></canvas>
+ <div class="note">語法：R/C/L 名稱 節點1 節點2 值；V 名稱 + − DC 值 [SIN(偏移 振幅 頻率)] [AC 1]；D 陽極 陰極；Q 集極 基極 射極 [β]；U 輸出 + − 正電源 負電源（運放）。節點 0 為地，數值可用 k、meg、u、n、p。運放為簡化模型（增益 1e5、輸出阻抗 100 Ω、受電源軌限制），二極體預設為 1N914 參數。時域固定分析 3 個週期，頻率響應為 10 Hz～100 kHz。「試聽」會用第一個觀察節點，以 48 kHz 計算 1 秒後播放，需要有 SIN 來源（頻率上限約 4.8 kHz），計算約需 1～3 秒。</div></div>
+</section>
+<!-- [KATO] 計算工具，卡片用 data-cc 分類 -->
+<section id="tab-calc" class="hide">
+<div class="seg" id="calcCats" style="margin-bottom:10px"></div>
+<div class="grid2">
+ <div class="card" data-cc="ckt"><div class="row"><h3>RC 濾波器截止頻率</h3><span class="fm">f_c = 1 / (2πRC)</span></div>
+  <div class="note">同一組 R、C 可作高通或低通，截止頻率相同；位置決定類型。</div>
+  <div class="row"><span class="sub">電阻 R</span><b class="kv" id="rV"></b></div>
+  <input type="range" class="sl" id="rS" min="0" max="100000" value="50000" oninput="calcRC()">
+  <div class="row"><span class="sub">電容 C</span><b class="kv" id="cV"></b></div>
+  <input type="range" class="sl" id="cS" min="0" max="100000" value="60000" oninput="calcRC()">
+  <div class="seg" style="margin:10px 0"><button onclick="setRC(4700,47e-9)">TS 增益級 720Hz</button><button onclick="setRC(1e6,100e-9)">Buffer 輸入 1.6Hz</button><button onclick="setRC(220,220e-9)">TS Tone 高端 3.3kHz</button></div>
+  <div class="row st"><span>截止頻率 f_c</span><b class="big" id="rcR" style="color:var(--t)"></b></div>
+  <div class="note" id="rcBand"></div></div>
+ <div class="card" data-cc="ckt"><div class="row"><h3>Op-Amp 非反相增益</h3><span class="fm">Av = 1 + Rf / Rin</span></div>
+  <div class="note">假設理想運放；實際增益頻寬受 GBW 限制（4558 約 3 MHz）。</div>
+  <div class="row"><span class="sub">回授電阻 Rf</span><b class="kv" id="fV"></b></div>
+  <input type="range" class="sl" id="fS" min="0" max="100000" value="60000" style="accent-color:var(--o)" oninput="calcOp()">
+  <div class="row"><span class="sub">對地電阻 Rin</span><b class="kv" id="iV"></b></div>
+  <input type="range" class="sl" id="iS" min="0" max="100000" value="40000" style="accent-color:var(--o)" oninput="calcOp()">
+  <div class="seg" style="margin:10px 0"><button onclick="setOp(51e3,4700)">TS 最小增益</button><button onclick="setOp(551e3,4700)">TS 最大增益</button></div>
+  <div class="row st"><span>電壓增益</span><span style="text-align:right"><b class="big" id="opR" style="color:var(--o)"></b><br><b id="opD"></b></span></div></div>
+<div class="card" data-cc="unit"><h3>波形電壓換算</h3>
+ <div class="ctl"><select id="aW" onchange="cA()"><option value="1.41421356">正弦波</option><option value="1">方波</option><option value="1.7320508">三角波</option><option value="1.7320508">鋸齒波</option><option value="2" data-uni="1">半波整流（正弦）</option><option value="1.41421356" data-uni="1">全波整流（正弦）</option></select>
+ <select id="aT" onchange="cA()"><option>Vpk</option><option>Vpp</option><option>Vrms</option></select>
+ <input type="number" id="aV" value="0.1" step="any" oninput="cA()"> V</div>
+ <div id="aO"></div><div class="note">峰值因數：正弦 √2、方波 1、三角/鋸齒 √3。dBV 以 1 Vrms 為 0，dBu 以 0.7746 Vrms 為 0。</div></div>
+
+<div class="card" data-cc="unit"><h3>頻率 / 週期 / 波長</h3>
+ <div class="ctl">頻率 <input type="number" id="bF" value="220" step="any" oninput="cB('f')"> Hz　週期 <input type="number" id="bT" value="4.545" step="any" oninput="cB('t')"> ms</div>
+ <div id="bO"></div><div class="note">聲速取 343 m/s (約 20°C)。</div></div>
+
+<div class="card" data-cc="unit"><h3>頻率 → 音名 / 音分</h3>
+ <div class="ctl">頻率 <input type="number" id="cF" value="82.41" step="any" oninput="cC()"> Hz　A4 = <input type="number" id="cA4" value="440" oninput="cC()" style="width:70px"> Hz</div>
+ <div class="seg" style="margin-bottom:6px" id="cStr"></div><div id="cNO"></div></div>
+
+<div class="card" data-cc="sig"><h3>諧波列表</h3>
+ <div class="ctl">基頻 <input type="number" id="dF" value="110" step="any" oninput="cD()"> Hz
+ <select id="dW" onchange="cD()"><option value="sq">方波</option><option value="sw">鋸齒波</option><option value="tr">三角波</option><option value="si">正弦波</option><option value="p25">脈衝波 25%</option><option value="hr">半波整流（正弦）</option></select></div>
+ <div class="sw"><table><thead><tr><th>次</th><th>頻率</th><th>相對振幅</th><th>dB</th></tr></thead><tbody id="dO" class="mono"></tbody></table></div></div>
+
+<div class="card" data-cc="sig"><h3>取樣 / Nyquist / 混疊</h3>
+ <div class="ctl">取樣率 <select id="eFs" onchange="cE()"><option>44100</option><option selected>48000</option><option>96000</option></select> Hz　訊號 <input type="number" id="eF" value="30000" step="any" oninput="cE()"> Hz　FFT <select id="eN" onchange="cE()"><option>1024</option><option>2048</option><option selected>8192</option><option>16384</option></select></div>
+ <div id="eO"></div></div>
+
+<div class="card" data-cc="ckt"><h3>一階濾波器響應</h3>
+ <div class="ctl"><select id="fT" onchange="cF()"><option value="lp">低通</option><option value="hp">高通</option></select>
+ fc <input type="number" id="fFc" value="720" step="any" oninput="cF()" style="width:80px"> Hz　測試 <input type="number" id="fF" value="2000" step="any" oninput="cF()" style="width:80px"> Hz</div>
+ <canvas id="bode" style="height:150px"></canvas><div id="fO" style="margin-top:6px"></div></div>
+
+<div class="card" data-cc="sig"><h3>THD 總諧波失真</h3>
+ <div class="ctl">基頻 H1 <input type="number" id="g1" value="1000" oninput="cG()" style="width:70px"> mV</div>
+ <div class="ctl">H2 <input type="number" id="g2" value="20" oninput="cG()" style="width:60px"> H3 <input type="number" id="g3" value="80" oninput="cG()" style="width:60px"> H4 <input type="number" id="g4" value="5" oninput="cG()" style="width:60px"> H5 <input type="number" id="g5" value="30" oninput="cG()" style="width:60px"> mV</div>
+ <div id="gO"></div><div class="note">THD = √(V2²+V3²+V4²+V5²) / V1。</div></div>
+
+<div class="card" data-cc="ckt"><div class="row"><h3>諧振峰（RLC）</h3><span class="fm">f0 = 1/(2π√(LC))</span></div>
+ <div class="ctl"><select id="kM" onchange="cK()"><option value="s">串聯 RLC・取 C 電壓（低通峰）</option><option value="p">並聯 RLC・帶通</option></select></div>
+ <div class="ctl">L <input type="number" id="kL" value="500" step="any" oninput="cK()" style="width:70px"> mH　C <input type="number" id="kC" value="33" step="any" oninput="cK()" style="width:70px"> nF　R <input type="number" id="kR" value="1500" step="any" oninput="cK()" style="width:70px"> Ω</div>
+ <div class="seg" style="margin:6px 0"><button onclick="setK(500,33,1500,'s')">Wah 500mH·33nF 串聯</button><button onclick="setK(500,33,10000,'p')">並聯 R=10k</button></div>
+ <canvas id="kb" style="height:150px"></canvas><div id="kO" style="margin-top:6px"></div>
+ <div class="note">串聯：Q = √(L/C)/R，Q &gt; 0.707 才有峰，峰值頻率 f0·√(1−1/2Q²)，峰值增益 Q/√(1−1/4Q²)。並聯：Q = R·√(C/L)，頻寬 = f0/Q，峰值定為 0 dB。R 請含電感線圈的直流電阻等所有損耗。</div></div>
+<div class="card" data-cc="unit"><h3>分貝換算</h3>
+ <div class="ctl">dB <input type="number" id="hD" value="6" step="any" oninput="cH('d')"> 　電壓比 <input type="number" id="hR" value="1.995" step="any" oninput="cH('r')"></div>
+ <div id="hO"></div><div class="note">電壓/電流：20·log10；功率：10·log10。</div></div>
+
+<div class="card" data-cc="res"><h3>電阻色環 ↔ 阻值</h3>
+ <div class="ctl"><select id="xcT" onchange="xColor()"><option value="4">4 環</option><option value="5">5 環</option></select></div>
+ <div class="ctl" id="xcSel"></div>
+ <div id="xcO"></div>
+ <div class="ctl" style="margin-top:8px">反查：阻值 <input type="number" id="xvR" value="4700" step="any" oninput="xVal()"> Ω</div>
+ <div id="xvO"></div>
+ <div class="note">順序：第一、二（、三）環為有效數字，其次為倍率，最後為容差。反查以 4 環、兩位有效數字計算。</div></div>
+
+<div class="card" data-cc="res"><h3>貼片電阻代碼 (SMD)</h3>
+ <div class="ctl">代碼 <input type="text" id="xsm" value="472" oninput="xSmd()" style="width:90px"></div>
+ <div class="seg" style="margin-bottom:6px"><button onclick="$('xsm').value='103';xSmd()">103</button><button onclick="$('xsm').value='4R7';xSmd()">4R7</button><button onclick="$('xsm').value='1002';xSmd()">1002</button><button onclick="$('xsm').value='01C';xSmd()">01C</button></div>
+ <div id="xsO"></div>
+ <div class="note">支援 3 碼 / 4 碼（末位為 10 的次方）、R 表示小數點（4R7 = 4.7 Ω）、EIA-96（兩位數字＋字母倍率，如 01C = 10 kΩ）。</div></div>
+
+<div class="card" data-cc="res"><h3>電阻串並聯與分壓</h3>
+ <div class="ctl">R1 <input type="number" id="xdA" value="10" step="any" oninput="xDiv()" style="width:80px"> kΩ　R2 <input type="number" id="xdB" value="10" step="any" oninput="xDiv()" style="width:80px"> kΩ</div>
+ <div class="ctl">Vin <input type="number" id="xdV" value="9" step="any" oninput="xDiv()" style="width:80px"> V　負載 RL <input type="number" id="xdL" value="0" step="any" oninput="xDiv()" style="width:80px"> kΩ（0 = 無）</div>
+ <div id="xdO"></div>
+ <div class="note">分壓：Vout = Vin·R2/(R1+R2)，R2 在下（接地端）。負載 RL 與 R2 並聯，會把輸出拉低。</div></div>
+
+<div class="card" data-cc="res"><h3>電位器 Taper（A / B / C）</h3>
+ <div class="ctl"><select id="xpT" onchange="xPot()"><option value="B">B 線性</option><option value="A" selected>A 對數（音量）</option><option value="C">C 反對數</option></select>
+ 總阻值 <input type="number" id="xpR" value="100" step="any" oninput="xPot()" style="width:80px"> kΩ</div>
+ <div class="row"><span class="sub">旋轉位置</span><b class="kv" id="xpV"></b></div>
+ <input type="range" class="sl" id="xpX" min="0" max="100" value="50" oninput="xPot()">
+ <div id="xpO"></div>
+ <div class="note">A 型以中點約 15% 阻值的典型曲線近似，C 型為其鏡像；實際曲線依廠牌而異，請以 datasheet 為準。</div></div>
+
+<div class="card" data-cc="unit"><h3>延遲時間 ↔ BPM</h3>
+ <div class="ctl">BPM <input type="number" id="xbB" value="120" step="any" oninput="xBpm('b')" style="width:80px">　四分音符 <input type="number" id="xbM" value="500" step="any" oninput="xBpm('m')" style="width:80px"> ms
+ <button class="btn ghost" onclick="xTap()">Tap 點擊測速</button></div>
+ <div id="xbO"></div>
+ <div class="note">Hz 為該延遲時間對應的重複頻率（1000 / ms）。Tap 連續點擊，間隔超過 2.5 秒會重新計算。</div></div>
+
+<div class="card" data-cc="pwr"><h3>LED 限流電阻</h3>
+ <div class="ctl">電源 Vs <input type="number" id="xlS" value="9" step="any" oninput="xLed()" style="width:70px"> V　LED Vf <input type="number" id="xlF" value="2" step="any" oninput="xLed()" style="width:70px"> V　電流 <input type="number" id="xlI" value="2" step="any" oninput="xLed()" style="width:70px"> mA</div>
+ <div class="seg" style="margin-bottom:6px"><button onclick="$('xlF').value=1.8;xLed()">紅 1.8V</button><button onclick="$('xlF').value=2.1;xLed()">綠 2.1V</button><button onclick="$('xlF').value=3;xLed()">藍 3.0V</button><button onclick="$('xlF').value=3.2;xLed()">白 3.2V</button></div>
+ <div id="xlO"></div>
+ <div class="note">R = (Vs − Vf) / If。標準值取 E24 系列中不小於計算值的最近一檔，電流只會略低。Vf 為典型值。</div></div>
+
+<!-- [KATO] 標準阻值查詢 -->
+<div class="card" data-cc="res"><h3>標準阻值查詢 (E12 / E24 / E96)</h3>
+ <div class="ctl">目標 R <input type="number" id="ysR" value="12.3" step="any" oninput="xStd()" style="width:80px"> kΩ　系列 <select id="ysS" onchange="xStd()"><option>E12</option><option selected>E24</option><option>E96</option></select></div>
+ <div id="ysO"></div>
+ <div class="note">列出目標值上下最接近的標準阻值與誤差，方便挑料。</div></div>
+<!-- [KATO] 電晶體偏壓 -->
+<div class="card" data-cc="pwr"><h3>電晶體偏壓 (BJT 分壓偏壓)</h3>
+ <div class="ctl">Vcc <input type="number" id="ybV" value="9" step="any" oninput="xBjt()" style="width:70px"> V R1 <input type="number" id="yb1" value="470" step="any" oninput="xBjt()" style="width:70px"> kΩ R2 <input type="number" id="yb2" value="100" step="any" oninput="xBjt()" style="width:70px"> kΩ RC <input type="number" id="ybC" value="10" step="any" oninput="xBjt()" style="width:70px"> kΩ RE <input type="number" id="ybE" value="1.5" step="any" oninput="xBjt()" style="width:70px"> kΩ β (hFE) <input type="number" id="ybB" value="150" step="any" oninput="xBjt()" style="width:70px"> 　材質 <select id="ybT" onchange="xBjt()"><option value="0.65">矽 Vbe≈0.65 V</option><option value="0.25">鍺 Vbe≈0.25 V</option></select></div>
+ <div id="ybO"></div>
+ <div class="note">NPN、射極接地、基極由 R1/R2 分壓。理想的類比增益級，集極電壓約落在 Vcc 一半附近，輸出擺幅最大。</div></div>
+<div class="card" data-cc="pwr"><h3>偏壓 Vref 分壓</h3>
+ <div class="ctl">Vcc <input type="number" id="xvC" value="9" step="any" oninput="xVref()" style="width:70px"> V　R1 <input type="number" id="xvA" value="100" step="any" oninput="xVref()" style="width:70px"> kΩ　R2 <input type="number" id="xvB" value="100" step="any" oninput="xVref()" style="width:70px"> kΩ　濾波 C <input type="number" id="xvD" value="10" step="any" oninput="xVref()" style="width:70px"> µF</div>
+ <div id="xvrO"></div>
+ <div class="note">單電源運放用 R1、R2 分壓出約 Vcc/2 的虛擬地；C 接在 Vref 對地做濾波。對稱削波的餘裕以理想軌對軌估算，實際運放會少約 1–1.5 V。</div></div>
+
+<div class="card" data-cc="pwr"><h3>電池續航</h3>
+ <div class="ctl">容量 <input type="number" id="xtC" value="500" step="any" oninput="xBat()" style="width:80px"> mAh　耗電 <input type="number" id="xtI" value="5" step="any" oninput="xBat()" style="width:70px"> mA　每週使用 <input type="number" id="xtW" value="5" step="any" oninput="xBat()" style="width:60px"> h</div>
+ <div class="seg" style="margin-bottom:6px"><button onclick="$('xtC').value=500;xBat()">鹼性 9V</button><button onclick="$('xtC').value=1000;xBat()">鋰 9V</button><button onclick="$('xtC').value=300;xBat()">碳鋅 9V</button><button onclick="$('xtC').value=200;xBat()">NiMH 9V</button></div>
+ <div id="xtO"></div>
+ <div class="note">容量為典型參考值，會隨放電電流與廠牌變動。「實用」以 70% 容量估算（電壓降到運放或失真開始變差前）。</div></div>
+</div>
+</section>
+</main>
+<!-- [KATO] 頁尾 -->
+<footer class="sub" style="text-align:center;padding:16px">Buffer Overflow Crew · 教學用簡化模型，不是 SPICE 模擬</footer>
+
+<script>
+/* (c) BUFFER OVERFLOW CREW | BOC_Pedal_Circuit_Lab */
+// [RET2L!BC] 工具函式 $ 與全域狀態 S
+const $=id=>document.getElementById(id);
+const VF={silicon:.6,germanium:.3,led:1.8};
+const S={mode:'ts',gain:50,tone:1800,vol:70,vin:100,diode:'silicon',bypass:false,playing:false,src:'guitar',tab:'sim',circ:'ts808'};
+// [STEAKqwq] TS808 固定元件值
+const RIN=4700,CIN=47e-9,RF0=51e3,POT=500e3;
+const Rf=()=>S.mode==='rat'?S.gain*1e3:S.mode==='muff'?0:RF0+S.gain/100*POT, gm=()=>5+45*S.gain/100, A=()=>S.mode==='rat'?1+Rf()/560:S.mode==='muff'?gm()*8:1+Rf()/RIN, Vf=()=>VF[S.diode];
+const hard=(x,v)=>x/Math.pow(1+Math.pow(Math.abs(x)/v,8),1/8);
+const M={ts:'TS808 軟削峰',rat:'RAT 硬削峰',muff:'Big Muff 雙級'};
+$('modes').innerHTML=Object.keys(M).map(k=>`<button id="m-${k}" onclick="setMode('${k}')">${M[k]}</button>`).join('');
+// [Hazuki Saki] 切換 TS808 / RAT / Big Muff
+function setMode(m){S.mode=m;Object.keys(M).forEach(k=>$('m-'+k).classList.toggle('on',k===m));
+ $('panT').textContent=M[m]+' 面板';
+ $('k-tone').parentElement.querySelector('.kl').textContent=m==='rat'?'FILTER 低通':'TONE 音色';
+ $('k-gain').parentElement.querySelector('.kl').textContent=m==='rat'?'DISTORTION':m==='muff'?'SUSTAIN':'GAIN 增益';
+ $('sRf').previousElementSibling.textContent=m==='rat'?'DISTORTION Rf（Rg 560Ω）':m==='muff'?'增益 Q2 · Q3':'增益級 Rf';
+ $('sHp').previousElementSibling.textContent=m==='rat'?'增益支路轉折 (560Ω / 47Ω)':m==='muff'?'低頻轉折':'低頻轉折 (4.7kΩ·47nF)';
+ setKnob(KN[1],S.tone)}
+// [Hazuki Saki] 削波函式，各模式曲線不同
+const shape=v=>{const f=Vf();if(S.mode==='rat')return hard(A()*v,f);if(S.mode==='muff'){const y=f*Math.tanh(gm()*v/f);return f*Math.tanh(8*y/f)}return f*Math.tanh(A()*v/f)};          // 剪峰級輸出 (V)
+// [KATO] 單位格式化 (｡･ω･｡)
+const fmt=(v,u)=>v>=1e6?(v/1e6).toFixed(2)+' M'+u:v>=1e3?(v/1e3).toFixed(v>=1e4?1:2)+' k'+u:v.toFixed(0)+' '+u;
+const fmtC=c=>c>=1e-6?(c*1e6).toFixed(2)+' µF':c>=1e-9?(c*1e9).toFixed(1)+' nF':(c*1e12).toFixed(0)+' pF';
+const fmtF=f=>f>=1e3?(f/1e3).toFixed(2)+' kHz':f.toFixed(1)+' Hz';
+const logmap=(s,a,b)=>a*Math.pow(b/a,s/100000);
+
+/* ---------- UI scaffolding ---------- */
+// [RET2L!BC] 分頁與分類定義，新增分頁要改這裡
+const TABS=[['sim','互動模擬器','sim'],['sch','電路原理與 BOM','learn'],['wave','波形檢視','learn'],['calc','計算工具','tool'],['spice','SPICE 模擬','tool'],['crew','工作人員','about'],['lain','Lain','lain']];
+const CATS=[['sim','模擬'],['learn','原理與檢視'],['tool','計算工具'],['about','關於'],['lain','Lain']];
+$('cats').innerHTML=CATS.map(c=>`<button id="nc-${c[0]}" onclick="catGo('${c[0]}')">${c[1]}</button>`).join('');
+$('tabs').innerHTML=TABS.map(t=>`<button id="nt-${t[0]}" data-g="${t[2]}" onclick="tab('${t[0]}')">${t[1]}</button>`).join('');
+function catGo(g){tab(TABS.find(x=>x[2]===g)[0])}
+function syncNav(t){const g=TABS.find(x=>x[0]===t)[2];CATS.forEach(c=>$('nc-'+c[0]).classList.toggle('on',c[0]===g));TABS.forEach(x=>$('nt-'+x[0]).classList.toggle('hide',x[2]!==g));$('tabs').classList.toggle('hide',TABS.filter(x=>x[2]===g).length<2)}
+// [RET2L!BC] Lain 模式外觀
+function lainMode(on){const r=document.documentElement;
+ if(on&&!r.classList.contains('lain')){S.prevTheme=r.dataset.theme;r.dataset.theme='dark';r.classList.add('lain')}
+ else if(!on&&r.classList.contains('lain')){r.classList.remove('lain');if(S.prevTheme===undefined)delete r.dataset.theme;else r.dataset.theme=S.prevTheme}}
+// [RET2L!BC] 分頁切換
+function tab(t){if(t==='calc'&&window.calcAll)setTimeout(calcAll,0);lainMode(t==='lain');if(t==='lain'&&S.tab!=='lain')lainIntro();if(t!=='lain'){lainClose();lainIntroEnd(1)}S.tab=t;TABS.forEach(x=>{$('tab-'+x[0]).classList.toggle('hide',x[0]!==t);$('nt-'+x[0]).classList.toggle('on',x[0]===t)});syncNav(t)}
+// [KATO] 深淺色切換
+function toggleTheme(){if(S.tab==='lain')return;const r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark'}
+$('diodes').innerHTML=[['silicon','矽 1N4148','0.6 V'],['germanium','鍺 1N34A','0.3 V'],['led','紅 LED','1.8 V']].map(d=>`<button id="d-${d[0]}" onclick="setDiode('${d[0]}')">${d[1]}<br><small>${d[2]}</small></button>`).join('');
+// [STEAKqwq] 二極體類型（矽 / 鍺 / LED）:)
+function setDiode(m){S.diode=m;['silicon','germanium','led'].forEach(k=>$('d-'+k).classList.toggle('on',k===m));refresh()}
+
+// [Hazuki Saki] 旋鈕定義
+const KN=[['gain','GAIN 增益','%',0,100,v=>Math.round(v)+' %'],['tone','TONE 音色','Hz',720,3200,v=>S.mode==='rat'?Math.round(32000*Math.pow(475/32000,(v-720)/2480))+' Hz':Math.round(v)+' Hz'],['vol','LEVEL 音量','%',0,100,v=>Math.round(v)+' %']];
+$('knobs').innerHTML=KN.map(k=>`<div><div class="kl">${k[1]}</div><div class="kn" id="k-${k[0]}" tabindex="0" role="slider" aria-label="${k[1]}"><i></i></div><div class="kv" id="kv-${k[0]}"></div></div>`).join('');
+function setKnob(k,v){const [p,,,mn,mx,f]=k;v=Math.min(mx,Math.max(mn,v));S[p]=v;const el=$('k-'+p);el.querySelector('i').style.transform=`rotate(${-135+(v-mn)/(mx-mn)*270}deg)`;$('kv-'+p).textContent=f(v);el.setAttribute('aria-valuenow',Math.round(v));refresh()}
+KN.forEach(k=>{const el=$('k-'+k[0]),rng=k[4]-k[3];let y0,v0,drag=false;
+ const mv=y=>{if(drag)setKnob(k,v0+(y0-y)*rng/200)};
+ el.addEventListener('pointerdown',e=>{drag=true;y0=e.clientY;v0=S[k[0]];el.setPointerCapture(e.pointerId)});
+ el.addEventListener('pointermove',e=>mv(e.clientY));el.addEventListener('pointerup',()=>drag=false);
+ el.addEventListener('wheel',e=>{e.preventDefault();setKnob(k,S[k[0]]-Math.sign(e.deltaY)*rng/50)},{passive:false});
+ el.addEventListener('keydown',e=>{const d={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];if(d){e.preventDefault();setKnob(k,S[k[0]]+d*rng/50)}})});
+
+/* ---------- 電路模型 ---------- */
+// [Dr.GG] THD 計算
+function thd(){const a=S.vin/1000,N=512;let re=[],im=[];const y=[];for(let n=0;n<N;n++)y.push(shape(a*wf(n/N)));
+ const H=k=>{let r=0,i=0;for(let n=0;n<N;n++){r+=y[n]*Math.cos(2*Math.PI*k*n/N);i+=y[n]*Math.sin(2*Math.PI*k*n/N)}return Math.hypot(r,i)};
+ const hs=[1,2,3,4,5,6,7,8,9,10].map(H),f=Math.max(...hs);let s=0;hs.forEach(x=>{s+=x*x});s-=f*f;return{thd:Math.sqrt(Math.max(0,s))/f*100,pk:Math.max(...y)}}
+// [RET2L!BC] 參數改變後更新畫面
+function refresh(){
+ $('sGain').textContent=`${A().toFixed(1)}× (${(20*Math.log10(A())).toFixed(1)} dB)`;
+ $('sRf').textContent=S.mode==='muff'?'Q2 ×'+gm().toFixed(0)+' · Q3 ×8':fmt(Rf(),'Ω');$('sVf').textContent=`±${Vf().toFixed(2)} V`;
+ $('sHp').textContent=S.mode==='rat'?'60 Hz / 1.5 kHz':S.mode==='muff'?'—':fmtF(1/(2*Math.PI*RIN*CIN));
+ const t=thd();S.pk=t.pk;$('sThd').textContent=`${t.pk.toFixed(2)} V / ${t.thd.toFixed(0)} %`;
+ $('vinV').textContent=S.vin+' mV';updateAudio()}
+
+/* ---------- WebAudio (固定訊號路徑，Bypass 即時生效) ---------- */
+let ac,N={},timer,osc;
+// [Hazuki Saki] 建立 Web Audio 訊號路徑
+function initAudio(){ac=new (window.AudioContext||window.webkitAudioContext)();
+ N.bus=ac.createGain();N.inG=ac.createGain();N.hp=ac.createBiquadFilter();N.hp.type='highpass';N.hp.frequency.value=1/(2*Math.PI*RIN*CIN);
+ N.lp=ac.createBiquadFilter();N.lp.type='lowpass';N.lp.frequency.value=N.hp.frequency.value;
+ N.pre=ac.createBiquadFilter();N.pre.type='lowpass';N.pre.frequency.value=20000;N.ws=ac.createWaveShaper();N.ws.oversample='4x';N.tone=ac.createBiquadFilter();N.tone.type='lowpass';
+ N.wet=ac.createGain();N.cln=ac.createGain();N.cln.gain.value=.25;N.by=ac.createGain();N.out=ac.createGain();
+ N.bus.connect(N.inG);N.inG.connect(N.hp);N.hp.connect(N.pre);N.pre.connect(N.ws);N.ws.connect(N.tone);N.tone.connect(N.wet);N.wet.connect(N.out);
+ N.inG.connect(N.lp);N.lp.connect(N.cln);N.cln.connect(N.out);N.bus.connect(N.by);N.by.connect(N.out);N.an=ac.createAnalyser();N.an.fftSize=8192;N.an.smoothingTimeConstant=.7;N.out.connect(N.an);N.out.connect(ac.destination);updateAudio()}
+// [Hazuki Saki] 更新濾波與削波曲線
+function updateAudio(){if(!ac)return;const c=new Float32Array(4096);
+ for(let i=0;i<c.length;i++){const x=i/(c.length-1)*2-1;c[i]=shape(x*.5)/2}N.ws.curve=c;
+ N.inG.gain.value=S.vin/500;const t=(S.tone-720)/2480,rt=S.mode==='rat',ts=S.mode==='ts';N.tone.frequency.value=rt?20000:S.tone;N.pre.frequency.value=rt?32000*Math.pow(475/32000,t):20000;N.hp.frequency.value=ts?720:rt?60:30;N.lp.frequency.value=N.hp.frequency.value;N.wet.gain.value=S.bypass?0:1;N.cln.gain.value=S.bypass||S.mode!=='ts'?0:.25;
+ N.by.gain.value=S.bypass?.3:0;N.out.gain.value=S.vol/100*1.2}
+// [Hazuki Saki] 開始 / 停止發聲
+function toggleAudio(){if(!ac)initAudio();ac.resume();S.playing?stopA():startA()}
+function startA(){S.playing=true;$('playBtn').textContent='停止發聲';$('aLed').classList.add('on');$('aTxt').textContent='WebAudio：播放中';
+ if(S.src==='guitar'){const f=[82.41,123.47,164.81,207.65,246.94,329.63];const strum=()=>{f.forEach((q,i)=>{const t=ac.currentTime+i*.03,o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.value=q;
+  g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+1.2);o.connect(g);g.connect(N.bus);o.start(t);o.stop(t+1.25)})};strum();timer=setInterval(strum,1500)}
+ else{osc=ac.createOscillator();osc.setPeriodicWave(pw(S.src));osc.frequency.value=220;const g=ac.createGain();g.gain.value=.8;osc.connect(g);g.connect(N.bus);osc.start()}}
+function stopA(){S.playing=false;$('playBtn').textContent='開始發聲';$('aLed').classList.remove('on');$('aTxt').textContent='WebAudio：靜音';clearInterval(timer);if(osc){try{osc.stop()}catch(e){}osc=null}}
+// [Hazuki Saki] 撥弦波形 🎸
+function pw(k){const N=1024,H=64,re=new Float32Array(H+1),im=new Float32Array(H+1),f=WV[k].fn;
+ for(let h=1;h<=H;h++){let a=0,b=0;for(let n=0;n<N;n++){const x=f(n/N);a+=x*Math.cos(2*Math.PI*h*n/N);b+=x*Math.sin(2*Math.PI*h*n/N)}re[h]=2*a/N;im[h]=2*b/N}
+ return ac.createPeriodicWave(re,im,{disableNormalization:true})}
+function changeSrc(){S.src=$('src').value;if(S.src!=='guitar')S.wave=S.src;syncWave();if(S.playing){stopA();startA()}}
+function setWave(v){S.wave=v;if(S.src!=='guitar')S.src=v;syncWave();if(S.playing){stopA();startA()}}
+function syncWave(){$('src').value=S.src;$('wW').value=S.wave;refresh()}
+// [Hazuki Saki] Bypass 開關
+function toggleBypass(){S.bypass=!S.bypass;$('byBtn').textContent=S.bypass?'效果：BYPASS':'效果：ON';$('pLed').classList.toggle('on',!S.bypass);updateAudio()}
+
+/* ---------- 示波器：220 Hz，2 ms/div，CH1 100mV/div，CH2 500mV/div ---------- */
+const cv=$('scope'),cx=cv.getContext('2d');let ph=0;
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function rs(){if(!cv.clientWidth)return;const r=devicePixelRatio||1;cv.width=Math.round(cv.clientWidth*r);cv.height=Math.round(cv.clientHeight*r);cx.setTransform(r,0,0,r,0,0)}
+addEventListener('resize',rs);
+// [Hazuki Saki] 示波器繪圖迴圈
+function draw(){requestAnimationFrame(draw);const rr=devicePixelRatio||1;if(cv.clientWidth&&(cv.width!==Math.round(cv.clientWidth*rr)||cv.height!==Math.round(cv.clientHeight*rr)))rs();const w=cv.clientWidth,h=cv.clientHeight,dv=h/8,cy=h/2;ph+=S.playing?.0004:.0002;
+ cx.fillStyle=css('--cv');cx.fillRect(0,0,w,h);cx.strokeStyle=css('--c');cx.lineWidth=1;
+ for(let i=0;i<=10;i++){cx.beginPath();cx.moveTo(i*w/10,0);cx.lineTo(i*w/10,h);cx.stroke()}
+ for(let j=0;j<=8;j++){cx.beginPath();cx.moveTo(0,j*dv);cx.lineTo(w,j*dv);cx.stroke()}
+ cx.strokeStyle=css('--bd');cx.beginPath();cx.moveTo(0,cy);cx.lineTo(w,cy);cx.stroke();
+ const f=220,T=.02,a=S.vin/1000;
+ const tr=(col,lw,fn)=>{cx.beginPath();cx.strokeStyle=col;cx.lineWidth=lw;for(let x=0;x<=w;x+=2){const t=x/w*T+ph*50,v=a*wf(f*t),y=cy-fn(v)*dv;x?cx.lineTo(x,y):cx.moveTo(x,y)}cx.stroke()};
+ tr(css('--t'),2,v=>v/.1);
+ if(!S.bypass)tr(css('--o'),2.5,v=>shape(v)/.5);
+ if(S.tab==='wave'&&window.drawWave)drawWave();if(S.tab==='sim'&&window.drawResp)drawResp();}
+</script>
+<script>
+/* (c) BUFFER OVERFLOW CREW | BOC_Pedal_Circuit_Lab */
+
+/* ---------- 波形庫 ---------- */
+const WV={};
+(function(){const raw={
+ sine:['正弦波',x=>Math.sin(2*Math.PI*x)],
+ square:['方波',x=>x<.5?1:-1],
+ triangle:['三角波',x=>x<.25?4*x:x<.75?2-4*x:4*x-4],
+ sawtooth:['鋸齒波（上升）',x=>2*x-1],
+ revsaw:['反向鋸齒波（下降）',x=>1-2*x],
+ pulse25:['脈衝波 25%',x=>x<.25?1:-1],
+ pulse10:['窄脈衝 10%',x=>x<.1?1:-1],
+ halfrect:['半波整流（去直流）',x=>(Math.max(0,Math.sin(2*Math.PI*x))-1/Math.PI)],
+ fullrect:['全波整流（去直流）',x=>(Math.abs(Math.sin(2*Math.PI*x))-2/Math.PI)],
+ fifth:['五度和弦 (2f+3f)',x=>Math.sin(4*Math.PI*x)+Math.sin(6*Math.PI*x)],
+ harm3:['基頻+三次諧波',x=>Math.sin(2*Math.PI*x)+.4*Math.sin(6*Math.PI*x)],
+ asym:['不對稱波（含偶次）',x=>Math.sin(2*Math.PI*x)+.5*Math.sin(4*Math.PI*x+1)]};
+ for(const k in raw){let m=0;for(let i=0;i<2048;i++)m=Math.max(m,Math.abs(raw[k][1](i/2048)));WV[k]={name:raw[k][0],fn:x=>raw[k][1](x)/m}}})();
+S.wave='sine';
+const wf=x=>WV[S.wave].fn(x-Math.floor(x));
+(function(){const o=Object.keys(WV).map(k=>`<option value="${k}">${WV[k].name}</option>`).join('');
+ $('src').innerHTML='<option value="guitar">吉他 E 大和弦 (Synth)</option>'+o;$('wW').innerHTML=o;syncWave()})();
+/* ---------- 電路圖 (方塊級) 與 BOM ---------- */
+const CIRC={
+ts808:{t:'TS808 Overdrive 訊號路徑',n:'9V 供電；運放偏壓於 4.5V。增益級在 720 Hz 以下增益趨近 1（低頻保持乾淨），以上由 1+(51k+Pot)/4.7k 決定，約 11.9×–118×。',c:'#00c8d6',
+ b:[['輸入緩衝','Q1 2SC1815','R 510k 偏壓'],['增益級','IC1 JRC4558D','Rin 4.7k+47nF'],['削峰','D1/D2 1N914','與 Rf 並聯'],['音色','Tone 20k','約 723Hz–3.2kHz'],['音量/輸出','Level 100k','輸出緩衝']],
+ bom:[['Q1','2SC1815','NPN 電晶體','輸入緩衝，提供高輸入阻抗，保護拾音器負載。',0],
+ ['IC1','JRC4558D（可換 TL072）','雙運放','非反相增益級，增益 = 1+Rf/Rin。',1],
+ ['D1, D2','1N914 / 1N4148','矽二極體','反向並聯於回授，將輸出限制在約 ±0.6 V（軟剪峰）。',2],
+ ['Rf','51 kΩ + 500 kΩ (B500k)','電阻+電位器','回授電阻，GAIN 旋鈕調整，總值 51k–551k。',1],
+ ['Rin / Cin','4.7 kΩ / 47 nF','電阻/薄膜電容','形成 720 Hz 轉折：1/(2π·4.7k·47n)，低頻增益降為 1。',1],
+ ['R1','510 kΩ','電阻','輸入偏壓/下拉，防止切換爆音。',0],
+ ['TONE','20 kΩ 電位器','電位器','可變低通，約 723 Hz–3.2 kHz。',3],
+ ['VOL','100 kΩ (A100k)','電位器','輸出音量。',4]]},
+fuzz:{t:'Fuzz Face 雙晶體管電路',n:'原版為 9V 正極接地，使用 PNP 鍺晶體管（AC128，Q1 hFE 約 70–90、Q2 約 100–130）。矽版多用 NPN（BC108 等）並改為負極接地。',c:'#ff6b6b',
+ b:[['輸入','C1 2.2µF','隔直流'],['Q1','AC128 PNP','R1 33k / R2 8.2k'],['Q2','AC128 PNP','R3 100k 回授'],['Fuzz/Vol','1k / 500k','控制'],['輸出','C2 20µF','耦合']],
+ bom:[['C1','2.2 µF','電解電容','輸入耦合，隔絕直流。',0],
+ ['Q1','AC128 (PNP, 鍺)','晶體管','第一級共射放大，決定失真起點。',1],
+ ['Q2','AC128 (PNP, 鍺)','晶體管','第二級放大並驅動回授，飽和產生 Fuzz。',2],
+ ['R1, R2','33 kΩ, 8.2 kΩ','電阻','Q1 偏壓與 Q2 集極負載。',1],
+ ['R3','100 kΩ','電阻','Q2 集極至 Q1 的直流/交流回授，穩定偏壓。',2],
+ ['FUZZ','1 kΩ (A1k)','電位器','調整回授量與失真量。',3],
+ ['VOL','500 kΩ (A500k)','電位器','輸出音量。',3],
+ ['C2','20 µF','電解電容','輸出耦合。',4]]},
+buffer:{t:'Op-Amp 單位增益緩衝器',n:'偏壓 4.5V 由 2×100k 分壓提供。輸入 HPF = 1/(2π·1M·100n) ≈ 1.6 Hz，音訊頻段不受影響。',c:'#10b981',
+ b:[['輸入','C_in 100nF','HPF 1.6 Hz'],['偏壓','R 1M + Vref','4.5V'],['緩衝','IC1 TL072','Gain = 1'],['輸出','C_out 10µF','+ R 1k 保護']],
+ bom:[['C_in','100 nF','薄膜電容','輸入耦合，隔絕直流。',0],
+ ['R_bias','1 MΩ','電阻','提供同相輸入端直流路徑至 Vref。',1],
+ ['R_div','2 × 100 kΩ + 10 µF','分壓+濾波','產生 4.5V 虛擬地並濾除電源雜訊。',1],
+ ['IC1','TL072 / NE5532','運放','電壓跟隨，輸入阻抗極高、輸出阻抗極低。',2],
+ ['C_out','10 µF','電解電容','阻擋直流，與 100k 負載 HPF 約 0.16 Hz。',3]]},
+boost:{t:'Op-Amp 乾淨推桿 (Boost)',n:'9V 單電源，運放偏壓 4.5V。非反相放大 Av = 1 + Rf/Rg：Rf=100k 電位器、Rg=1k，增益 1×–101×（0–40 dB）。TL072 的 GBW 約 3 MHz，101× 時頻寬約 30 kHz；9V 下輸出餘裕有限，大增益易提早削峰，可改用軌對軌運放。',c:'#d97706',
+ b:[['輸入','C 100nF','R 1M 偏壓'],['增益級','IC1 TL072','Av = 1 + Rf/Rg'],['輸出','C 1µF','耦合輸出']],
+ bom:[['C_in / R_bias','100 nF / 1 MΩ','電容/電阻','輸入耦合與偏壓，HPF = 1/(2π·1M·100n) ≈ 1.6 Hz。',0],
+ ['IC1','TL072（9V 單電源）','運放','非反相增益級，增益 = 1+Rf/Rg。',1],
+ ['Rf','100 kΩ (B100k)','電位器','BOOST 旋鈕，增益 1×–101×。',1],
+ ['Rg','1 kΩ','電阻','對地電阻，決定最大增益。',1],
+ ['C_out','1 µF','電容','輸出耦合，與下一級輸入阻抗形成 HPF。',2]]},
+rat:{t:'RAT 型硬削峰失真',n:'9V 供電、4.5V 偏壓。LM308 以兩條 RC 支路設定增益：560Ω+4.7µF（轉折約 60 Hz）與 47Ω+2.2µF（轉折約 1.5 kHz），最大增益 1+100k/47 ≈ 2128×（66.6 dB）。削峰二極體接在運放「之後」對地（硬削峰），與 TS 的回授軟削峰不同；Filter 為可變低通，約 475 Hz–32 kHz。',c:'#a855f7',
+ b:[['輸入','C 22nF','R 1M 偏壓'],['增益級','IC1 LM308','Rg 47Ω / 560Ω'],['Filter','1.5k + 100k','C 3.3nF 低通'],['硬削峰','D1/D2 1N914','對地 ±0.6V'],['輸出','JFET 緩衝','Volume 100k']],
+ bom:[['C_in / R','22 nF / 1 MΩ','電容/電阻','輸入耦合與偏壓，HPF ≈ 7 Hz。',0],
+ ['IC1','LM308（可換 OP07 等）','運放','非反相增益級；LM308 壓擺率約 0.3 V/µs，大訊號高頻被磨圓，是 RAT 音色特徵之一。',1],
+ ['Rf','100 kΩ (A100k)','電位器','DISTORTION 旋鈕，最大增益 1+100k/47Ω ≈ 2128×。',1],
+ ['Rg1 / C','47 Ω / 2.2 µF','電阻/電容','高頻增益支路，轉折 1/(2π·47·2.2µ) ≈ 1.54 kHz。',1],
+ ['Rg2 / C','560 Ω / 4.7 µF','電阻/電容','低頻增益支路，轉折 ≈ 60.5 Hz。',1],
+ ['FILTER','1.5 kΩ + 100 kΩ (A100k)','電阻+電位器','搭配 3.3 nF 形成可變低通，fc ≈ 475 Hz–32 kHz，越往高阻值越暗。',2],
+ ['D1, D2','1N914 / 1N4148','矽二極體','反向並聯到地，將輸出硬削峰在約 ±0.6 V。',3],
+ ['Q1 + VOL','JFET 緩衝 + 100 kΩ','電晶體/電位器','低輸出阻抗的輸出級與音量控制。',4]]},
+muff:{t:'Big Muff 型 Fuzz',n:'9V 供電。四級電晶體：Q1 輸入增益、Q2/Q3 兩級削峰（每級回授並聯一對反向二極體）、Q4 補償增益。Tone 為低通與高通混合，交疊處中頻凹陷（mid scoop）。對稱削峰以奇次諧波為主；各零件數值依版本而異。',c:'#ec4899',
+ b:[['輸入增益','Q1 2N5088','NPN 增益級'],['削峰 1','Q2 + 1N914 ×2','反向並聯回授'],['削峰 2','Q3 + 1N914 ×2','反向並聯回授'],['Tone','LPF/HPF 混合','100k 電位器'],['輸出','Q4 + VOL','100k 補償增益']],
+ bom:[['Q1','2N5088 / BC239（依版本）','NPN 電晶體','輸入增益級，推動後方削峰級。',0],
+ ['SUSTAIN','100 kΩ','電位器','控制送進削峰級的訊號量，越大越飽和。',1],
+ ['Q2, Q3','同 Q1','NPN 電晶體','兩級削峰放大，集極到基極回授。',1],
+ ['D1–D4','1N914 / 1N4148','矽二極體','每級一對反向並聯於回授，將訊號削成近似方波。',2],
+ ['TONE','100 kΩ','電位器','在低通與高通之間混合，中間位置中頻最凹。',3],
+ ['Q4','同 Q1','NPN 電晶體','補回 Tone 濾波造成的音量損失。',4],
+ ['VOLUME','100 kΩ','電位器','輸出音量。',4]]},
+trem:{t:'Tremolo 調幅',n:'Tremolo 是調幅：以低頻振盪器（約 1–7 Hz）週期性改變增益，會在音符兩側產生 ±f_LFO 的側頻，聽感是音量起伏，不是音高變化（與 vibrato 不同）。LFO 與整形為控制路徑，驅動光耦；音訊由輸入經光耦分壓到輸出。',c:'#3b82f6',
+ b:[['輸入緩衝','IC1a TL072','Gain = 1'],['LFO','IC2 NE555','1.1–6.9 Hz'],['整形','RC 平滑','fc ≈ 15 Hz'],['光耦 VCA','LED + LDR','LFO 控制增益'],['輸出','C 1µF','DEPTH 100k']],
+ bom:[['IC1','TL072','雙運放','輸入與輸出緩衝。',0],
+ ['IC2','NE555','計時器','無穩態 LFO：f = 1.44 / ((R1+2·R2)·C)。',1],
+ ['R1 / C','1 kΩ / 2.2 µF','電阻/電容','與 R2 共同決定頻率。',1],
+ ['R2','47 kΩ + 250 kΩ (B250k)','電阻+電位器','SPEED 旋鈕，頻率約 1.1–6.9 Hz。',1],
+ ['R_s / C_s','47 kΩ / 220 nF','RC 平滑','把方波邊緣抹圓以免爆音，fc ≈ 15 Hz，仍可通過 1–7 Hz 的基頻。',2],
+ ['OC1','LED + LDR（VTL5C3 類）','光耦','LFO 驅動 LED，LDR 阻值隨之變化，與串聯電阻分壓形成增益起伏。',3],
+ ['DEPTH','100 kΩ','電位器','調整 LFO 驅動量，即起伏深度。',3],
+ ['C_out','1 µF','電容','輸出耦合。',4]]}
+};
+$('ctabs').innerHTML=Object.keys(CIRC).map(k=>`<button id="ct-${k}" onclick="circ('${k}')">${CIRC[k].t}</button>`).join('');
+// [STEAKqwq] 切換電路圖並高亮 BOM
+function circ(k,hl){S.circ=k;const d=CIRC[k];Object.keys(CIRC).forEach(x=>$('ct-'+x).classList.toggle('on',x===k));
+ $('cTitle').textContent=d.t;$('cNote').textContent=d.n;
+ const n=d.b.length,bw=110,gap=(800-60-n*bw)/(n-1);let s=`<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="${d.c}"/></marker></defs><text x="6" y="90" font-size="11" fill="var(--mu)">IN</text><text x="762" y="90" font-size="11" fill="var(--mu)">OUT</text>`;
+ d.b.forEach((b,i)=>{const x=30+i*(bw+gap),on=hl===i;
+  s+=`<rect x="${x}" y="60" width="${bw}" height="80" rx="0" fill="${on?d.c+'44':'var(--c)'}" stroke="${d.c}" stroke-width="${on?3:1.5}"/><text x="${x+bw/2}" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="var(--tx)">${b[0]}</text><text x="${x+bw/2}" y="108" text-anchor="middle" font-size="10" fill="${d.c}">${b[1]}</text><text x="${x+bw/2}" y="124" text-anchor="middle" font-size="9" fill="var(--mu)">${b[2]}</text>`;
+  s+=`<line x1="${i?x-gap:10}" y1="100" x2="${x-2}" y2="100" stroke="${d.c}" stroke-width="2" marker-end="url(#ar)"/>`});
+ s+=`<line x1="${30+(n-1)*(bw+gap)+bw}" y1="100" x2="790" y2="100" stroke="${d.c}" stroke-width="2"/>`;
+ if(k==='ts808'){const x=30+2*(bw+gap);s+=`<text x="${x+bw/2}" y="170" text-anchor="middle" font-size="10" fill="var(--mu)">D1/D2 跨接於 IC1 輸出↔反相輸入</text>`}
+ $('svg').innerHTML=s;
+ $('bom').innerHTML=d.bom.map(r=>`<tr class="bom ${hl===r[4]?'on':''}" onclick="circ('${k}',${r[4]})"><td style="color:var(--t);font-weight:700" class="mono">${r[0]}</td><td class="mono">${r[1]}</td><td style="color:var(--mu)">${r[2]}</td><td>${r[3]}</td></tr>`).join('')}
+
+/* ---------- 計算工具 (對數滑桿) ---------- */
+let rcR=()=>logmap(+$('rS').value,100,1e6),rcC=()=>logmap(+$('cS').value,10e-12,10e-6);
+// [STEAKqwq] RC 截止頻率
+function calcRC(){const r=rcR(),c=rcC(),f=1/(2*Math.PI*r*c);$('rV').textContent=fmt(r,'Ω');$('cV').textContent=fmtC(c);$('rcR').textContent=fmtF(f);
+ $('rcBand').textContent=f<20?'低於人耳可聽範圍，僅作直流隔離/穩定用。':f<250?'低頻段：用於去除低頻泥音或保留厚度。':f<5000?'中頻段：決定音色明暗與「鼻音感」。':'高頻段：用於削減高頻刺耳聲或抑制雜訊。'}
+function inv(v,a,b){return Math.round(100000*Math.log(v/a)/Math.log(b/a))}
+function setRC(r,c){$('rS').value=inv(r,100,1e6);$('cS').value=inv(c,10e-12,10e-6);calcRC()}
+// [STEAKqwq] Op-Amp 非反相增益 :/
+function calcOp(){const rf=logmap(+$('fS').value,1e3,1e6),ri=logmap(+$('iS').value,100,100e3),a=1+rf/ri;
+ $('fV').textContent=fmt(rf,'Ω');$('iV').textContent=fmt(ri,'Ω');$('opR').textContent=a.toFixed(1)+' ×';$('opD').textContent='('+(20*Math.log10(a)).toFixed(2)+' dB)'}
+function setOp(rf,ri){$('fS').value=inv(rf,1e3,1e6);$('iS').value=inv(ri,100,100e3);calcOp()}
+
+/* ---------- 波形檢視 ---------- */
+const W={f:220,t:2,fz:false,ph:0};
+function fit(c){const r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(c.width!==Math.round(w*r)||c.height!==Math.round(h*r)){c.width=Math.round(w*r);c.height=Math.round(h*r)}const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);x.fillStyle=css('--cv');x.fillRect(0,0,w,h);return[x,w,h]}
+function gridl(x,w,h,nx,ny,y0=0,hh=h){x.strokeStyle=css('--c');x.lineWidth=1;for(let i=0;i<=nx;i++){x.beginPath();x.moveTo(i*w/nx,y0);x.lineTo(i*w/nx,y0+hh);x.stroke()}for(let j=0;j<=ny;j++){x.beginPath();x.moveTo(0,y0+j*hh/ny);x.lineTo(w,y0+j*hh/ny);x.stroke()}}
+function txt(x,t,px,py,col,al='left'){x.fillStyle=col||css('--mu');x.font="11px 'Courier New',monospace";x.textAlign=al;x.fillText(t,px,py)}
+function harm(){const a=S.vin/1000,n=512,y=[];for(let i=0;i<n;i++)y.push(shape(a*wf(i/n)));
+ const H=k=>{let r=0,m=0;for(let i=0;i<n;i++){r+=y[i]*Math.cos(2*Math.PI*k*i/n);m+=y[i]*Math.sin(2*Math.PI*k*i/n)}return Math.hypot(r,m)};
+ const f=Math.max(...[1,2,3,4,5,6,7,8,9,10].map(H)),o=[];for(let k=1;k<=10;k++)o.push(20*Math.log10(Math.max(H(k)/f,1e-6)));return o}
+// [Dr.GG] 波形檢視繪圖
+function drawWave(){
+ if(!W.fz)W.ph+=.0003;
+ drawStatic();drawSnap();
+ /* W1 波形 */
+ let [x,w,h]=fit($('w1')),dv=h/8,cy=h/2,T=W.t*10e-3,a=S.vin/1000;
+ gridl(x,w,h,10,8);x.strokeStyle=css('--bd');x.beginPath();x.moveTo(0,cy);x.lineTo(w,cy);x.stroke();
+ const Vf_=Vf();x.setLineDash([5,4]);x.strokeStyle=css('--o')+'88';[1,-1].forEach(sg=>{x.beginPath();x.moveTo(0,cy-sg*Vf_/.5*dv);x.lineTo(w,cy-sg*Vf_/.5*dv);x.stroke()});x.setLineDash([]);
+ const tr=(col,lw,fn)=>{x.beginPath();x.strokeStyle=col;x.lineWidth=lw;for(let i=0;i<=w;i+=2){const t=i/w*T+W.ph*50,v=a*wf(W.f*t),y=cy-fn(v)*dv;i?x.lineTo(i,y):x.moveTo(i,y)}x.stroke()};
+ tr(css('--t'),2,v=>v/.1);if(!S.bypass)tr(css('--o'),2.5,v=>shape(v)/.5);
+ txt(x,`${W.f} Hz · ${W.t} ms/div`,8,14);
+ const pk=S.pk||0;$('wIn').textContent=(a*1000).toFixed(0)+' mV';$('wOut').textContent=S.bypass?'BYPASS':pk.toFixed(2)+' V';
+ $('wCmp').textContent=S.bypass?'—':(pk/(A()*a)*100).toFixed(0)+' % of 線性';$('wVf').textContent='±'+Vf_.toFixed(2)+' V';
+ /* W2 轉移曲線 */
+ [x,w,h]=fit($('w2'));gridl(x,w,h,10,8);const m=v=>w/2+v/.5*w/2,n=v=>h/2-v/2*h/2;
+ x.strokeStyle=css('--bd');x.beginPath();x.moveTo(0,h/2);x.lineTo(w,h/2);x.moveTo(w/2,0);x.lineTo(w/2,h);x.stroke();
+ x.fillStyle=css('--t')+'22';x.fillRect(m(-a),0,m(a)-m(-a),h);
+ x.setLineDash([4,4]);x.strokeStyle=css('--mu');x.beginPath();for(let i=0;i<=w;i+=3){const v=(i/w*2-1)*.5,y=Math.max(0,Math.min(h,n(A()*v)));i?x.lineTo(i,y):x.moveTo(i,y)}x.stroke();x.setLineDash([]);
+ x.strokeStyle=css('--o');x.lineWidth=2.5;x.beginPath();for(let i=0;i<=w;i+=2){const v=(i/w*2-1)*.5;i?x.lineTo(i,n(shape(v))):x.moveTo(i,n(shape(v)))}x.stroke();
+ txt(x,'Vin',w-8,h/2-6,null,'right');txt(x,'Vout',w/2+6,12);
+ /* W3 諧波 */
+ [x,w,h]=fit($('w3'));gridl(x,w,h,10,6);const hs=harm(),bw=w/10,top=20;
+ hs.forEach((d,i)=>{const bh=Math.max(0,(d+60)/60)*(h-16-top);x.fillStyle=(i+1)%2?css('--t'):css('--o');x.fillRect(i*bw+6,h-16-bh,bw-12,bh);txt(x,'H'+(i+1),i*bw+bw/2,h-3,null,'center');txt(x,d>-59?d.toFixed(0):'−∞',i*bw+bw/2,h-20-bh,null,'center')});
+ txt(x,'範圍 0 ～ -60 dB',w-4,12,null,'right');
+ /* W4 實際音訊 */
+ [x,w,h]=fit($('w4'));const live=S.playing&&N.an;$('wLive').textContent=live?'即時擷取中':'請先到「互動模擬器」開啟發聲';
+ gridl(x,w,h/2-4,10,4);gridl(x,w,h/2-4,0,0);gridl(x,w,h/2-8,10,4,h/2+4,h/2-8);
+ if(!live){txt(x,'— 無音訊 —',w/2,h/2,null,'center');return}
+ const td=new Float32Array(N.an.fftSize);N.an.getFloatTimeDomainData(td);let st=0;for(let i=1;i<td.length/2;i++)if(td[i-1]<0&&td[i]>=0){st=i;break}
+ const hh=h/2-4;x.strokeStyle=css('--o');x.lineWidth=1.5;x.beginPath();const ns=Math.min(1024,td.length-st);let mx=1e-4;for(let i=0;i<ns;i++)mx=Math.max(mx,Math.abs(td[st+i]));
+ for(let i=0;i<ns;i++){const px=i/ns*w,py=hh/2-td[st+i]/mx*hh*.45;i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+ txt(x,'TIME DOMAIN（自動縮放，峰值 '+mx.toFixed(2)+' FS）',6,12);txt(x,(ns/ac.sampleRate*1000).toFixed(1)+' ms 視窗',w-6,12,null,'right');
+ const fd=new Float32Array(N.an.frequencyBinCount);N.an.getFloatFrequencyData(fd);const sy=h/2+4,sh=h/2-8,nyq=ac.sampleRate/2,L=Math.log10;
+ x.strokeStyle=css('--t');x.lineWidth=1.5;x.beginPath();let first=true;
+ for(let px=0;px<w;px++){const f=Math.pow(10,L(20)+px/w*(L(20000)-L(20))),b=Math.min(fd.length-1,Math.round(f/nyq*fd.length)),d=Math.max(-100,fd[b]),py=sy+sh-(d+100)/100*sh;first?(x.moveTo(px,py),first=false):x.lineTo(px,py)}x.stroke();
+ [100,1000,10000].forEach(f=>{const px=(L(f)-L(20))/(L(20000)-L(20))*w;txt(x,f>=1000?f/1000+'k':f,px,h-3,null,'center')});txt(x,'SPECTRUM',6,sy+12);
+}
+
+/* ---------- 靜態波形與快照 ---------- */
+W.cx=null;
+(function(){const c=$('w5');const mv=e=>{const r=c.getBoundingClientRect();W.cx=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))};
+ c.addEventListener('pointermove',mv);c.addEventListener('pointerdown',mv);c.addEventListener('pointerleave',()=>{})})();
+// [Dr.GG] 靜態波形
+function drawStatic(){
+ let [x,w,h]=fit($('w5')),dv=h/8,cy=h/2,T=W.t*10e-3,a=S.vin/1000;
+ gridl(x,w,h,10,8);x.strokeStyle=css('--bd');x.beginPath();x.moveTo(0,cy);x.lineTo(w,cy);x.stroke();
+ x.setLineDash([5,4]);x.strokeStyle=css('--o')+'88';[1,-1].forEach(sg=>{x.beginPath();x.moveTo(0,cy-sg*Vf()/.5*dv);x.lineTo(w,cy-sg*Vf()/.5*dv);x.stroke()});x.setLineDash([]);
+ const vi=t=>a*wf(W.f*t);
+ const tr=(col,lw,fn)=>{x.beginPath();x.strokeStyle=col;x.lineWidth=lw;for(let i=0;i<=w;i+=1){const t=i/w*T,y=cy-fn(vi(t))*dv;i?x.lineTo(i,y):x.moveTo(i,y)}x.stroke()};
+ tr(css('--t'),2,v=>v/.1);if(!S.bypass)tr(css('--o'),2.5,v=>shape(v)/.5);
+ txt(x,`CH1 100 mV/div · CH2 500 mV/div · ${W.t} ms/div · ${W.f} Hz`,8,14);
+ if(W.cx!=null){const px=W.cx*w,t=W.cx*T,v=vi(t),o=S.bypass?v:shape(v);
+  x.strokeStyle=css('--tx')+'99';x.lineWidth=1;x.beginPath();x.moveTo(px,0);x.lineTo(px,h);x.stroke();
+  x.fillStyle=css('--t');x.beginPath();x.arc(px,cy-v/.1*dv,4,0,7);x.fill();x.fillStyle=css('--o');x.beginPath();x.arc(px,cy-o/.5*dv,4,0,7);x.fill();
+  $('cT').textContent=(t*1000).toFixed(2)+' ms';$('cI').textContent=(v*1000).toFixed(0)+' mV';$('cO').textContent=(S.bypass?(v*1000).toFixed(0)+' mV':o.toFixed(3)+' V')}}
+// [Hazuki Saki] 擷取實際音訊輸出
+function snapshot(){if(!(S.playing&&N.an)){$('w6').dataset.msg='1';return}
+ const td=new Float32Array(N.an.fftSize),fd=new Float32Array(N.an.frequencyBinCount);N.an.getFloatTimeDomainData(td);N.an.getFloatFrequencyData(fd);W.snap={td,fd,sr:ac.sampleRate}}
+// [Hazuki Saki] 畫出擷取的快照
+function drawSnap(){
+ const [x,w,h]=fit($('w6')),hh=h/2-4;gridl(x,w,hh,10,4);gridl(x,w,h/2-8,10,4,h/2+4,h/2-8);
+ if(!W.snap){txt(x,$('w6').dataset.msg?'請先開啟發聲再擷取':'尚未擷取',w/2,h/2,null,'center');return}
+ const {td,fd,sr}=W.snap;let st=0;for(let i=1;i<td.length/2;i++)if(td[i-1]<0&&td[i]>=0){st=i;break}
+ x.strokeStyle=css('--o');x.lineWidth=1.5;x.beginPath();const ns=Math.min(1024,td.length-st);let mx=1e-4;for(let i=0;i<ns;i++)mx=Math.max(mx,Math.abs(td[st+i]));
+ for(let i=0;i<ns;i++){const px=i/ns*w,py=hh/2-td[st+i]/mx*hh*.45;i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+ txt(x,'TIME DOMAIN (快照，峰值 '+mx.toFixed(2)+' FS)',6,12);txt(x,`${(ns/sr*1000).toFixed(1)} ms 視窗`,w-6,12,null,'right');
+ const sy=h/2+4,sh=h/2-8,nyq=sr/2,L=Math.log10;x.strokeStyle=css('--t');x.lineWidth=1.5;x.beginPath();
+ for(let px=0;px<w;px++){const f=Math.pow(10,L(20)+px/w*(L(20000)-L(20))),b=Math.min(fd.length-1,Math.round(f/nyq*fd.length)),d=Math.max(-100,fd[b]),py=sy+sh-(d+100)/100*sh;px?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+ [100,1000,10000].forEach(f=>{const px=(L(f)-L(20))/(L(20000)-L(20))*w;txt(x,f>=1000?f/1000+'k':f,px,h-3,null,'center')});txt(x,'SPECTRUM (快照)',6,sy+12);
+}
+
+function setFz(v){W.fz=v;$('wFz').textContent=v?'繼續':'凍結'}
+function shift(dt){W.ph+=dt/50}
+function nudge(d){setFz(true);shift(d*W.t*10e-3/10)}
+(function(){const c=$('w1');let dn=false,lx=0;
+ c.addEventListener('pointerdown',e=>{dn=true;lx=e.clientX;setFz(true);c.setPointerCapture(e.pointerId)});
+ c.addEventListener('pointermove',e=>{if(!dn)return;shift(-(e.clientX-lx)/c.clientWidth*W.t*10e-3);lx=e.clientX});
+ c.addEventListener('pointerup',()=>dn=false);c.addEventListener('pointercancel',()=>dn=false)})();
+
+/* ---------- Lain 全螢幕開場 ---------- */
+let lainIT=null;
+function lainIntroEnd(quiet){const o=$('lainIntro');clearTimeout(lainIT);lainIT=null;if(o.classList.contains('hide'))return;o.classList.add('out');setTimeout(()=>{if(lainIT===null)o.classList.add('hide')},400);if(!quiet&&S.tab==='lain')lainOpen()}
+function lainIntro(){const o=$('lainIntro'),tx=$('lainTx'),T=['present day','present time'];let n=0;clearTimeout(lainIT);
+ o.classList.remove('hide','out');tx.textContent='';o.onclick=()=>lainIntroEnd();
+ const run=()=>{if(n>=T.length)return lainIntroEnd();const w=T[n++];let i=0;tx.textContent='';
+  const tick=()=>{if(i<w.length){tx.textContent=w.slice(0,++i);lainIT=setTimeout(tick,90)}else lainIT=setTimeout(run,1400)};tick()};
+ run()}
+addEventListener('keydown',e=>{if(e.key==='Escape')lainIntroEnd()});
+/* ---------- lain 小視窗 ---------- */
+const LF=["⠀⠀⠀⠀⠀⣀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡢⡀⠀⠀⠀⠀\n⠀⠀⠀⢄⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀\n⠀⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀\n⠀⢨⣿⡿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀\n⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢀⠀\n⢈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⠀\n⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⡇⠀⢸⢹⣿⣿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡧⠀\n⠈⣿⣿⣿⣿⣿⠧⠯⠟⠿⠧⠀⠀⠀⠸⠿⠿⢼⣿⠿⢿⣟⣿⣿⣿⣿⣿⣇⠀\n⠀⣿⣿⣿⣿⡿⢰⠺⣿⠉⠂⠀⠀⠀⠀⠀⠀⠚⣷⣶⠢⡀⢿⣿⣿⣿⡿⠉⠀\n⢐⢻⣿⣏⠙⠇⠈⠒⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠝⠻⠥⠁⢰⡌⠹⠋⡀⡀⠀\n⠀⠉⢻⣿⣦⡀⠐⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠆⠄⠸⢃⣰⡀⠱⠀⠀\n⠀⠀⠀⢹⣿⣿⡄⠀⠀⠀⠀⠀⠀⡀⡀⠀⠀⠀⠀⠀⠀⢀⣶⣿⣿⡟⠁⠀⠀\n⠀⠀⠘⣸⢿⣿⣿⣦⡀⠀⠀⠀⠀⠠⠄⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣇⠀⠀⠀\n⠀⠀⠀⠉⠞⠿⠛⠿⠿⢶⣄⠀⠀⠀⠀⠀⠀⠀⣠⡾⠿⠿⣿⣿⡿⠅⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿⣶⣤⣤⣤⡴⠊⠀⡧⠀⠀⣿⣿⣇⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⣀⡞⠛⠿⣿⣿⠟⠋⠀⠀⠀⠱⣀⠈⣿⣿⡁⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⢠⡠⠔⠋⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠀⠙⠲⣿⣧⠀⠀⠀⠀⠀\n⢀⠔⠒⠀⠉⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡿⠀⠉⠚⠤⢔", "⣿⣿⣿⣿⣿⣿⣿⣻⠿⣝⡿⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⢫⡿⣽⢣⡒⡄⠲⡐⢄⠢⠀⠀⢀⠠⣽\n⣿⣿⣿⣿⣿⣿⣿⣻⣿⠙⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢫⢿⡽⣣⠕⡨⢁⠉⢂⠁⠠⠐⣤⣿⣿\n⣿⣿⣿⣿⣿⣻⣿⣟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠫⣗⢇⢢⠐⠌⡰⠀⣌⣶⣿⡟⠓⢉\n⣟⠬⡛⠽⠻⠿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣾⠡⢎⠢⣱⣿⡿⣟⠚⣌⢡⢆\n⣿⢻⡶⣍⡀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢫⠘⢂⣴⣿⠏⠉⠄⠉⠀⡁⠈\n⡛⢷⣶⣍⡛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡿⢋⡰⢌⡑⢀⠂⠡⣄⢣\n⣭⠒⣌⡉⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⢦⣑⠣⠐⢂⠌⡳⢬⣷\n⢇⠏⡴⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠄⡀⠄⠀⢂⠨⣴⣻⣿\n⣜⡸⡠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡠⢀⡜⠠⢄⣧⣿⣿⣿\n⣎⢵⣛⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣗⣨⣴⠾⠛⣩⣵⡾⠿\n⣿⣾⣽⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⣿⣿⣿⠀⢽⣆⠀⠀⠀⠀⠀⣦⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣻⣭⡴⠶⢛⠫⠑⠂⠁\n⡝⣜⠳⡃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⡏⠀⢺⣿⠀⠀⠀⠀⠀⣿⣇⡀⠆⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠄⠀⠀⠀⠀⠀⠀⠀\n⡼⢶⣟⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⡆⣿⣿⣿⣿⠁⣀⢸⣿⠀⠀⠀⠀⢰⣿⣿⠡⠘⠄⣠⡀⠀⠀⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠘⣎⠳⠌⠂⠄⠀⠀⠄\n⣿⡭⢪⠅⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⢸⣷⠸⣿⣿⣿⣷⢹⡌⣿⣸⢠⣴⣶⣿⣿⣿⣼⡦⠟⠛⠛⠃⠐⠥⠠⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣳⣮⣳⡌⣤⢤⣰⣤⣶\n⢧⡈⠳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣶⡄⠿⠘⠛⠂⠙⠛⠻⣿⣏⢿⣼⣿⣿⣿⣿⣿⣿⢋⣠⣤⠶⠶⢶⣶⣷⣶⣶⣶⣴⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡷⣷⣷⣾⣤⣿⣿⣿⠭\n⣶⡜⢤⠀⠀⠀⠀⠀⠀⠀⠀⠀⢘⣩⣤⣶⣶⣶⣿⣿⣯⣭⡝⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢁⠟⠍⠁⠀⡀⠈⡉⢻⣿⣿⠂⠀⠀⠀⠀⢀⣠⠀⠀⠀⠀⠀⣤⡾⠛⢉⣀⣤⣴\n⣿⣿⣳⡂⠀⠀⠀⠀⠀⠀⠀⠀⢈⣿⣿⣿⠟⠉⠉⠀⠠⠀⠉⢺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣼⡀⠀⠀⠀⠀⣿⠀⢿⣿⡄⠓⠦⢄⢀⠞⠁⠀⠀⢲⣷⠿⠛⠓⠛⠉⠍⠉⠀\n⣿⡷⣯⢿⡄⠔⡀⠀⠀⠀⠀⣧⡘⣾⣿⠄⢰⣇⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣮⡻⠶⠤⠴⠞⢋⣼⣿⣿⠀⠀⠀⣠⠟⢤⡀⠀⠀⠈⠍⠂⠀⠀⠈⠁⠈⠀⠀\n⣿⣿⡿⣯⢿⡼⢷⠀⡀⠀⠀⠠⢹⣿⣿⣶⣀⠙⠷⠶⠶⣛⣥⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⢠⠞⠉⠀⠀⠁⠀⠀⠀⡀⢀⠀⠀⢀⣀⣤⠴⠞\n⣟⣯⢿⡝⠉⠀⡘⣄⠐⠀⠐⢤⡀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⣧⣯⣽⢾⣛⣫⡽⠶⠛⢋\n⠿⣚⣳⠌⡐⠠⠑⠨⠁⠠⠀⠀⠙⠒⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⣽⠷⣚⢫⢛⠲⣜⠢⡁⢆\n⣿⣿⣿⣟⣷⣶⣷⣶⣶⣶⠗⠀⠀⠀⠐⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠀⠀⠀⢠⣄⡡⠀⠢⠌⡱⡌⡄⢑⠪\n⣿⣿⡿⣿⢿⣿⣿⠿⠋⠁⠀⠀⠀⠀⠀⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⢨⡟⣧⢃⠂⠤⢡⣙⠘⡄⠂\n⣿⡷⣿⢿⢿⡛⣡⢶⡒⠆⠀⠀⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠲⠜⡁⠊⠐⠈⠂⠙⠮⠐⡀\n⣿⣽⠋⠁⢠⠘⣵⢫⡝⣤⠀⠀⠀⠀⠀⠀⠀⠀⠈⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣯⣭⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⢠⣶⠐⡆⠂⡄⠀⠀⠀⠀⠀⠀⠀⠀\n⠉⠠⣌⠰⢀⠱⣌⠷⢣⠅⠀⣀⡀⠢⢀⠔⡠⠂⠀⠀⣄⠙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣫⣤⠀⣀⠠⡖⡁⠀⠀⠀⠀⠸⣁⠣⢘⠐⠠⠀⠀⠀⠀⠀⠀⠀⠀\n⣴⡿⡎⠔⠠⡁⢆⡋⢇⠊⢰⠽⡁⢀⠂⠆⠠⠁⠀⢠⡟⢸⣿⠆⣽⣻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠈⠜⡠⢀⠁⠀⠀⠀⠀⡳⣔⡢⢄⠊⡄⢠⠀⡀⠀⡀⢀⠀⣀\n⣿⡝⣡⠋⡐⡐⠢⠙⡌⢢⢉⠒⠀⠂⠌⠠⢁⠂⢠⡿⢠⣿⡿⢀⣿⣿⣿⣾⣟⣛⣿⣿⣿⣛⣯⣿⣿⣿⣿⣿⣿⣿⡇⢨⣷⣒⠀⠀⠀⠀⢀⡳⣜⢿⢯⡷⣼⣥⣙⠶⣽⣜⣣⢻⡴\n⠣⠈⡄⢣⠐⠁⢡⠚⠬⡁⢂⡱⢈⡐⢈⠐⡠⠂⣼⠇⣾⣿⢃⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⢻⡆⠀⠀⠀⠀⡼⢑⢮⡏⡟⠽⢣⠙⢋⠎⠱⠋⠖⢣⠙\n⠀⠐⡈⢄⠰⠈⠠⣉⠦⣑⢦⡕⣣⠐⡂⠐⠀⣼⣻⡼⠟⣡⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⠁⠀⠀⠀⢸⣝⡞⢦⡙⢬⢃⠂⠁⠀⠀⠀⠀⠈⠀⠀\n⠀⢆⡸⢌⢆⠡⣧⢷⡺⣝⡾⣽⢧⣛⠴⠉⠞⣋⣥⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⣏⢾⡹⣧⠞⣄⠂⠌⠀⠀⠀⠀⡀⠀⠀⠀\n⡜⣢⢝⡲⣎⡷⠽⠳⢛⣙⣉⣉⣡⣤⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡏⠀⠀⠀⣤⣈⠒⠽⣳⡟⣬⢋⠄⠀⠀⠀⠀⠀⠀⠐⠀\n⠸⡁⢎⣡⣷⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠀⢸⣿⣿⣿⣶⣤⣌⣀⠉⠂⠀⠀⠀⠀⠀⠀⠀⠀", "⠀⠀⠀⠀⡌⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠉⠉⢳⠀⠘⠀⠀⠀\n⠀⠀⠀⡸⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠈⡆⠀⡇⠀⠀\n⠀⠀⠀⣳⢺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⠀⠁⠀⡇⠀⠀\n⠀⠀⢀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⢰⠀⡇⠀⠀\n⠀⠀⠈⢸⣿⣿⣿⣿⣿⣿⣿⡟⢸⡏⠀⢸⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠇⠀⠀\n⠀⠀⠀⠸⠛⣿⣿⣿⣿⣟⢻⠀⢸⡇⠀⢸⠀⣿⡇⣿⣿⣿⣿⡟⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢀⠀⠀⠀\n⠀⠀⠀⠀⠀⠈⣿⣿⡏⢉⠙⠓⢾⣙⠀⢸⠀⠏⡇⠟⠻⣿⣿⠃⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⡜⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⣿⢻⣷⠙⣿⣦⣄⡉⠁⠈⠀⠀⠇⠤⠴⠿⢶⣤⣀⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣿⠰⠁⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⢹⠈⢿⡈⠛⠛⠛⠋⠀⠀⠀⠀⠀⠀⠀⠾⣧⣀⠉⠙⠲⢿⣏⣿⣿⣿⣿⣿⣏⡄⣿⣿⡟⡀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠈⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⢿⣿⣿⣷⠖⠀⠈⣿⣿⣿⣿⡿⢋⣾⣿⣿⢧⡇⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣆⠀⠀⠀⠀⡔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⣟⣿⣶⣿⣿⣿⡟⠸⡀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢦⡀⠀⠘⠢⠤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡌⣿⣽⣿⣟⠻⠻⠏⠟⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣆⡀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⢞⣿⣿⣿⣿⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⣼⣏⡗⢄⠀⠀⠀⠀⠀⢀⡠⣤⡤⢔⡫⠔⢻⣿⣿⣿⠃⣸⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⢀⣠⠴⣪⣵⣾⣿⣿⡇⠀⠉⢲⠒⠒⠚⢀⡩⠴⠒⠉⠀⠀⢸⣿⣿⡇⠀⢸⣄⠑⢄⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⣠⢔⣨⣥⣾⣿⣿⣿⣿⣿⣿⠁⣀⣴⣿⣷⠀⠉⠁⠀⠀⠀⠀⠀⠀⣿⣿⣿⠁⠀⡏⠀⠑⢌⠡⡀⠀⠀⠀⠀⠀\n⢀⣴⡟⠋⠁⣴⣿⣿⣿⣿⣿⣿⣿⣧⣾⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⠀⠀⡇⠀⠀⠀⠱⡘⣆⠀⠀⠀⠀\n⢸⣻⣧⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄⠀⠀⠀⠀⢀⡴⣻⣿⣿⡇⠀⢸⠀⠀⠀⠀⠀⠈⡧⡑⡄⠀⠀\n⢸⢺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠑⠒⢐⣶⣿⣿⣿⣿⣿⣀⣠⡿⠀⠀⠀⠀⠀⣸⠁⠈⢜⢄⠀\n⣘⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣀⡀⣀⣠⠃⠀⠀⠀⠁⢢"];
+let lainT=null,lainI=0;
+const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function lainShow(){$('lainPre').textContent=LF[lainI];$('lainFr').textContent='frame '+(lainI+1)+'/'+LF.length}
+// [RET2L!BC] 開啟 Lain 小視窗
+function lainOpen(){
+ const w=$('lainWin'),f=$('flash');
+ if(!calm){f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
+ w.classList.remove('hide');
+ const ww=w.offsetWidth;w.style.left=Math.max(8,(innerWidth-ww)/2)+'px';w.style.top='84px';
+ clearInterval(lainT);lainI=0;lainShow();
+ lainT=setInterval(()=>{lainI=(lainI+1)%LF.length;lainShow();
+  if(!calm){w.classList.add('glitch');setTimeout(()=>w.classList.remove('glitch'),90)}},900)}
+function lainClose(){clearInterval(lainT);lainT=null;$('lainWin').classList.add('hide')}
+(function(){const tb=$('lainTb'),w=$('lainWin');let d=false,ox=0,oy=0;
+ tb.addEventListener('pointerdown',e=>{if(e.target.tagName==='BUTTON')return;d=true;ox=e.clientX-w.offsetLeft;oy=e.clientY-w.offsetTop;tb.setPointerCapture(e.pointerId)});
+ tb.addEventListener('pointermove',e=>{if(!d)return;w.style.left=Math.max(0,Math.min(innerWidth-w.offsetWidth,e.clientX-ox))+'px';w.style.top=Math.max(0,Math.min(innerHeight-40,e.clientY-oy))+'px'});
+ tb.addEventListener('pointerup',()=>d=false)})();
+
+/* ---------- 波形 / 訊號計算 ---------- */
+const nv=id=>{const v=parseFloat($(id).value);return isFinite(v)?v:0};
+const O=(l,v)=>`<div class="o"><span>${l}</span><b>${v}</b></div>`;
+const fv=v=>Math.abs(v)<1?(v*1000).toPrecision(4)+' mV':v.toPrecision(4)+' V';
+const db=x=>x>0?(20*Math.log10(x)).toFixed(2)+' dB':'−∞';
+// [KATO] 計算 1：波形電壓換算
+function cA(){const cr=+$('aW').value,t=$('aT').value,v=nv('aV'),u=!!$('aW').selectedOptions[0].dataset.uni;let pk=t==='Vpk'?v:t==='Vpp'?(u?v:v/2):v*cr;const rms=pk/cr;
+ $('aO').innerHTML=O('峰值 Vpk',fv(pk))+O('峰峰值 Vpp',fv(u?pk:pk*2))+O('有效值 Vrms',fv(rms))+O('峰值因數',cr.toFixed(3)+'（'+(20*Math.log10(cr)).toFixed(2)+' dB）')+O('dBV',rms>0?(20*Math.log10(rms)).toFixed(2):'−∞')+O('dBu',rms>0?(20*Math.log10(rms/0.7746)).toFixed(2):'−∞')}
+// [KATO] 計算 2：頻率 / 週期 / 波長
+function cB(src){if(src==='f'){const f=nv('bF');$('bT').value=f>0?+(1000/f).toPrecision(6):0}else{const t=nv('bT');$('bF').value=t>0?+(1000/t).toPrecision(6):0}
+ const f=nv('bF');const lam=f>0?343/f:0;
+ $('bO').innerHTML=O('頻率',f.toFixed(3)+' Hz')+O('週期',(f>0?1000/f:0).toFixed(4)+' ms')+O('角頻率 ω',(2*Math.PI*f).toFixed(2)+' rad/s')+O('聲波波長',lam>=1?lam.toFixed(3)+' m':(lam*100).toFixed(2)+' cm')+O('48kHz 每週期取樣點',f>0?(48000/f).toFixed(1):'—')}
+// [KATO] 音名與吉他空弦頻率
+const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STR=[['E2',82.41],['A2',110],['D3',146.83],['G3',196],['B3',246.94],['E4',329.63]];
+$('cStr').innerHTML=STR.map(x=>`<button onclick="$('cF').value=${x[1]};cC()">${x[0]}</button>`).join('');
+// [KATO] 計算 3：頻率 → 音名 / 音分 (๑•̀ㅂ•́)و✧
+function cC(){const f=nv('cF'),a4=nv('cA4')||440;if(f<=0){$('cNO').innerHTML=O('音名','—');return}
+ const m=69+12*Math.log2(f/a4),r=Math.round(m),c=(m-r)*100,nm=NN[((r%12)+12)%12]+(Math.floor(r/12)-1),ft=a4*Math.pow(2,(r-69)/12);
+ $('cNO').innerHTML=O('最近音名',nm)+O('MIDI 編號',r)+O('標準頻率',ft.toFixed(2)+' Hz')+O('偏差',(c>=0?'+':'')+c.toFixed(1)+' cent　'+(Math.abs(c)<5?'（準）':c>0?'（偏高）':'（偏低）'))}
+// [KATO] 計算 4：諧波列表
+function cD(){const f=nv('dF'),w=$('dW').value,rows=[];
+ for(let n=1;n<=8;n++){let a=0;if(w==='sq')a=n%2?1/n:0;else if(w==='sw')a=1/n;else if(w==='tr')a=n%2?1/(n*n):0;else if(w==='p25')a=Math.abs(Math.sin(n*Math.PI/4))/n/Math.sin(Math.PI/4);else if(w==='hr')a=n===1?1:n%2?0:4/(Math.PI*(n*n-1));else a=n===1?1:0;
+  rows.push(`<tr><td>H${n}</td><td>${(f*n).toFixed(1)} Hz</td><td>${a>1e-9?a.toFixed(4):'—'}</td><td>${a>1e-9?(20*Math.log10(a)).toFixed(1):'—'}</td></tr>`)}
+ $('dO').innerHTML=rows.join('')}
+// [KATO] 計算 5：取樣 / Nyquist / 混疊
+function cE(){const fs=+$('eFs').value,f=nv('eF'),n=+$('eN').value,ny=fs/2,al=Math.abs(f-fs*Math.round(f/fs));
+ $('eO').innerHTML=O('Nyquist 頻率',ny+' Hz')+O('FFT 頻率解析度',(fs/n).toFixed(2)+' Hz/bin')+O('FFT 視窗長度',(n/fs*1000).toFixed(1)+' ms')+O('每週期取樣點',f>0?(fs/f).toFixed(2):'—')+O('混疊後頻率',f>ny?`<span style="color:var(--o)">${al.toFixed(1)} Hz（超過 Nyquist，會混疊）</span>`:f.toFixed(1)+' Hz（無混疊）')}
+// [KATO] 計算 6：一階濾波器
+function cF(){const t=$('fT').value,fc=nv('fFc'),f=nv('fF');if(fc<=0)return;
+ const mag=x=>t==='lp'?1/Math.sqrt(1+(x/fc)**2):(x/fc)/Math.sqrt(1+(x/fc)**2),ph=x=>(t==='lp'?-Math.atan(x/fc):Math.atan(fc/x))*180/Math.PI;
+ $('fO').innerHTML=O('測試點增益',f>0?db(mag(f)):'—')+O('相位',f>0?ph(f).toFixed(1)+'°':'—')+O('轉折點 fc 增益','−3.01 dB　相位 '+(t==='lp'?'−45':'+45')+'°')+O('斜率','−/+20 dB/decade（6 dB/octave）');
+ const c=$('bode');if(!c.clientWidth)return;const r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*r;c.height=h*r;const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);
+ x.fillStyle=css('--cv');x.fillRect(0,0,w,h);const L=Math.log10,px=q=>(L(q)-L(20))/(L(20000)-L(20))*w,py=d=>h-14-(d+60)/60*(h-24);
+ x.strokeStyle=css('--c');x.lineWidth=1;[20,100,1000,10000].forEach(q=>{x.beginPath();x.moveTo(px(q),0);x.lineTo(px(q),h);x.stroke();txt(x,q>=1000?q/1000+'k':q,px(q)+2,h-2)});
+ [0,-20,-40,-60].forEach(d=>{x.beginPath();x.moveTo(0,py(d));x.lineTo(w,py(d));x.stroke();txt(x,d+' dB',2,py(d)-2)});
+ x.strokeStyle=css('--t');x.lineWidth=2;x.beginPath();for(let i=0;i<=w;i+=2){const q=Math.pow(10,L(20)+i/w*3),d=Math.max(-60,20*Math.log10(mag(q)));i?x.lineTo(i,py(d)):x.moveTo(i,py(d))}x.stroke();
+ x.setLineDash([4,3]);x.strokeStyle=css('--o');[fc].forEach(q=>{if(q>=20&&q<=20000){x.beginPath();x.moveTo(px(q),0);x.lineTo(px(q),h);x.stroke()}});
+ if(f>=20&&f<=20000){x.strokeStyle=css('--tx');x.beginPath();x.moveTo(px(f),0);x.lineTo(px(f),h);x.stroke()}x.setLineDash([])}
+// [KATO] 計算 7：THD
+function cG(){const v1=nv('g1'),hs=[2,3,4,5].map(k=>nv('g'+k));if(v1<=0){$('gO').innerHTML=O('THD','—');return}
+ const t=Math.sqrt(hs.reduce((a,b)=>a+b*b,0))/v1;
+ $('gO').innerHTML=O('THD',(t*100).toFixed(2)+' %')+O('THD (dB)',db(t))+O('主要成分','H'+(hs.indexOf(Math.max(...hs))+2)+'（'+Math.max(...hs)+' mV）')+O('奇次 / 偶次能量',(Math.hypot(hs[1],hs[3])).toFixed(1)+' / '+(Math.hypot(hs[0],hs[2])).toFixed(1)+' mV')}
+// [KATO] 計算 9：分貝換算
+function cH(src){if(src==='d'){$('hR').value=+Math.pow(10,nv('hD')/20).toPrecision(6)}else{const r=nv('hR');$('hD').value=r>0?+(20*Math.log10(r)).toPrecision(5):0}
+ const d=nv('hD');$('hO').innerHTML=O('電壓/電流比',Math.pow(10,d/20).toPrecision(5)+' ×')+O('功率比',Math.pow(10,d/10).toPrecision(5)+' ×')+O('例',d>=0?'放大 '+Math.pow(10,d/20).toFixed(2)+' 倍':'衰減為 '+(Math.pow(10,d/20)*100).toFixed(1)+' %')}
+// [KATO] 計算 8：RLC 諧振
+function cK(){const L=nv('kL')*1e-3,C=nv('kC')*1e-9,R=nv('kR'),m=$('kM').value;
+ if(L<=0||C<=0||R<=0){$('kO').innerHTML=O('結果','請輸入大於 0 的 L、C、R');return}
+ const f0=1/(2*Math.PI*Math.sqrt(L*C)),Q=m==='s'?Math.sqrt(L/C)/R:R*Math.sqrt(C/L);
+ const mag=f=>{const u=f/f0;return m==='s'?1/Math.hypot(1-u*u,u/Q):1/Math.hypot(1,Q*(u-1/u))};
+ let fp=f0,pk=m==='s'?Q:1;
+ if(m==='s'){if(Q>Math.SQRT1_2){fp=f0*Math.sqrt(1-1/(2*Q*Q));pk=Q/Math.sqrt(1-1/(4*Q*Q))}else{fp=0;pk=1}}
+ const bw=f0/Q,fl=f0*(Math.sqrt(1+1/(4*Q*Q))-1/(2*Q)),fh=f0*(Math.sqrt(1+1/(4*Q*Q))+1/(2*Q));
+ $('kO').innerHTML=O('諧振頻率 f0',fmtF(f0))+O('Q 值 / 阻尼比 ζ',Q.toFixed(2)+' / '+(1/(2*Q)).toFixed(3))
+  +O('峰值頻率',m==='s'?(fp>0?fmtF(fp):'無峰（Q ≤ 0.707）'):fmtF(f0))
+  +O('峰值增益',m==='s'?db(pk)+'（相對 DC）':'0 dB（相對峰值）')
+  +(m==='s'?O('f0 處增益',db(Q)):O('−3 dB 頻寬',fmtF(bw)+'（'+fmtF(fl)+' – '+fmtF(fh)+'）'));
+ const c=$('kb');if(!c.clientWidth)return;const r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*r;c.height=h*r;const g=c.getContext('2d');g.setTransform(r,0,0,r,0,0);
+ g.fillStyle=css('--cv');g.fillRect(0,0,w,h);const l10=Math.log10,px=q=>(l10(q)-l10(20))/3*w,py=d=>h-14-(Math.max(-30,Math.min(30,d))+30)/60*(h-24);
+ g.strokeStyle=css('--c');g.lineWidth=1;[20,100,1000,10000].forEach(q=>{g.beginPath();g.moveTo(px(q),0);g.lineTo(px(q),h);g.stroke();txt(g,q>=1000?q/1000+'k':q,px(q)+2,h-2)});
+ [20,0,-20].forEach(d=>{g.beginPath();g.moveTo(0,py(d));g.lineTo(w,py(d));g.stroke();txt(g,d+' dB',2,py(d)-2)});
+ g.strokeStyle=css('--t');g.lineWidth=2;g.beginPath();for(let i=0;i<=w;i+=2){const q=Math.pow(10,l10(20)+i/w*3),d=20*l10(mag(q));i?g.lineTo(i,py(d)):g.moveTo(i,py(d))}g.stroke();
+ g.setLineDash([4,3]);g.strokeStyle=css('--o');if(f0>=20&&f0<=20000){g.beginPath();g.moveTo(px(f0),0);g.lineTo(px(f0),h);g.stroke()}g.setLineDash([]);
+ if(fp>=20&&fp<=20000){g.fillStyle=css('--o');g.beginPath();g.arc(px(fp),py(20*l10(mag(fp))),4,0,7);g.fill()}}
+// [Dr.GG] 複數運算
+const CP={m:(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]],d:(a,b)=>{const q=b[0]*b[0]+b[1]*b[1];return[(a[0]*b[0]+a[1]*b[1])/q,(a[1]*b[0]-a[0]*b[1])/q]},a:(a,b)=>[a[0]+b[0],a[1]+b[1]],z:(c,w)=>[0,-1/(w*c)],h:a=>Math.hypot(a[0],a[1])};
+// [Dr.GG] 各級頻率響應
+function respStages(f){const w=2*Math.PI*f,t=(S.tone-720)/2480,m=S.mode;let g;
+ if(m==='ts'){const zg=CP.a([RIN,0],CP.z(CIN,w)),R=Rf(),zf=CP.d([R,0],[1,w*R*51e-12]);g=CP.a([1,0],CP.d(zf,zg))}
+ else if(m==='rat'){const z1=CP.a([560,0],CP.z(4.7e-6,w)),z2=CP.a([47,0],CP.z(2.2e-6,w)),zg=CP.d(CP.m(z1,z2),CP.a(z1,z2));g=CP.a([1,0],CP.d([Rf(),0],zg))}
+ else g=[A(),0];
+ const fh=m==='ts'?15.6:m==='rat'?7.2:16,fc=m==='rat'?32000*Math.pow(475/32000,t):S.tone;
+ return{hp:f/Math.hypot(f,fh),gn:CP.h(g),lp:1/Math.hypot(1,f/fc),fh,fc}}
+// [Dr.GG] 整機頻率響應圖
+function drawResp(){const c=$('resp');if(!c||!c.clientWidth)return;
+ const r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;
+ if(c.width!==Math.round(w*r)||c.height!==Math.round(h*r)){c.width=Math.round(w*r);c.height=Math.round(h*r)}
+ const g=c.getContext('2d');g.setTransform(r,0,0,r,0,0);g.fillStyle=css('--cv');g.fillRect(0,0,w,h);
+ const l10=Math.log10,span=l10(20000)-1,px=f=>(l10(f)-1)/span*w,np=Math.ceil(w/2),P=[];let mx=-1e9,fm=10;
+ for(let i=0;i<=np;i++){const f=Math.pow(10,1+i/np*span),s=respStages(f),d=20*l10(s.hp*s.gn*s.lp);if(d>mx){mx=d;fm=f}P.push([f,20*l10(s.hp),20*l10(s.gn),20*l10(s.lp),d])}
+ const top=Math.ceil((mx+6)/10)*10,bot=-20,py=d=>h-14-(Math.max(bot,Math.min(top,d))-bot)/(top-bot)*(h-24);
+ g.strokeStyle=css('--c');g.lineWidth=1;
+ [10,100,1000,10000].forEach(q=>{g.beginPath();g.moveTo(px(q),0);g.lineTo(px(q),h);g.stroke();txt(g,q>=1000?q/1000+'k':q,px(q)+2,h-2)});
+ for(let d=Math.ceil(bot/20)*20;d<=top;d+=20){g.beginPath();g.moveTo(0,py(d));g.lineTo(w,py(d));g.stroke();txt(g,d+' dB',2,py(d)-2)}
+ const ln=(k,col,lw,dash)=>{g.setLineDash(dash||[]);g.strokeStyle=col;g.lineWidth=lw;g.beginPath();P.forEach((p,i)=>i?g.lineTo(i*w/np,py(p[k])):g.moveTo(0,py(p[k])));g.stroke();g.setLineDash([])};
+ ln(1,css('--mu'),1.5,[4,3]);ln(2,css('--o'),1.5);ln(3,css('--g'),1.5);ln(4,css('--t'),2.5);
+ g.fillStyle=css('--t');g.beginPath();g.arc(px(fm),py(mx),4,0,7);g.fill();
+ const s1=respStages(1000),set=(id,t)=>{const e=$(id);if(e.textContent!==t)e.textContent=t};
+ set('rG1',(20*l10(s1.hp*s1.gn*s1.lp)).toFixed(1)+' dB');set('rPk',mx.toFixed(1)+' dB @ '+fmtF(fm));set('rFc',fmtF(s1.fh)+' / '+fmtF(s1.fc))}
+// [KATO] RLC 預設值
+function setK(l,c,r,m){$('kL').value=l;$('kC').value=c;$('kR').value=r;$('kM').value=m;cK()}
+
+// [Dr.GG] SPICE：MNA + 牛頓法。parse → lin → newton → OP / Tran / AC
+/* ---------- SPICE 式電路求解器（節點分析 MNA + 牛頓法）---------- */
+// [RET2L!BC] 數值解析（k、meg、u、n、p）
+const spV=s=>{const m=String(s).trim().match(/^([-+]?[0-9.]+(?:e[-+]?\d+)?)(meg|[tgkmunpf])?/i);if(!m)throw Error('數值無法解析：'+s);return +m[1]*({t:1e12,g:1e9,meg:1e6,k:1e3,m:1e-3,u:1e-6,n:1e-9,p:1e-12,f:1e-15}[(m[2]||'').toLowerCase()]||1)};
+// [RET2L!BC] 網表解析
+function spParse(txt){const nm={'0':-1,gnd:-1},nodes=[],els=[];let nb=0;const nid=s=>{s=s.toLowerCase();if(s in nm)return nm[s];nodes.push(s);return nm[s]=nodes.length-1};
+ txt.split('\n').forEach(l=>{l=l.trim();if(!l||/^[*;.]/.test(l))return;const t=l.split(/\s+/),k=t[0][0].toUpperCase(),e={k,name:t[0]};
+  if('RCL'.includes(k)){e.n=[nid(t[1]),nid(t[2])];e.v=spV(t[3])}
+  else if(k==='V'){e.n=[nid(t[1]),nid(t[2])];const d=l.match(/DC\s+(\S+)/i),s=l.match(/SIN\(\s*(\S+)\s+(\S+)\s+(\S+)/i);e.dc=d?spV(d[1]):0;if(s){e.sin=[spV(s[1]),spV(s[2]),spV(s[3])];e.dc=e.sin[0]}e.ac=/\bAC\b/i.test(l)}
+  else if(k==='D'){e.n=[nid(t[1]),nid(t[2])];const Is=t[3]?spV(t[3]):2.52e-9,nn=t[4]?spV(t[4]):1.752;e.f=v=>{const i=Is*(Math.exp(Math.min((v[0]-v[1])/(nn*.02585),40))-1);return[i,-i]}}
+  else if(k==='Q'){e.n=[nid(t[1]),nid(t[2]),nid(t[3])];const bf=t[4]?spV(t[4]):200,Is=1e-14,E=x=>Math.exp(Math.min(x/.02585,40));e.f=v=>{const ef=E(v[1]-v[2]),er=E(v[1]-v[0]),it=Is*(ef-er),ibe=Is/bf*(ef-1),ibc=Is/20*(er-1);return[it-ibc,ibe+ibc,-(it+ibe)]}}
+  else if(k==='U'){e.n=[nid(t[1]),nid(t[2]),nid(t[3])];const hi=spV(t[4]),lo=spV(t[5]),mid=(hi+lo)/2,h=(hi-lo)/2;e.f=v=>[(v[0]-(mid+h*Math.tanh(1e5*(v[1]-v[2])/h)))/100,0,0]}
+  else throw Error('不支援的元件：'+t[0]);els.push(e)});
+ const N=nodes.length;els.forEach(e=>{if(e.k==='V'||e.k==='L')e.br=N+nb++});return{nodes,els,N,M:N+nb}}
+// [Dr.GG] 建立 MNA 方程式，非線性元件線性化
+function spLin(P,x,t,sc){const M=P.M,Z=()=>Array.from({length:M},()=>new Array(M).fill(0)),G=Z(),C=Z(),b=new Array(M).fill(0),a=(i,j,v,Q)=>{if(i>=0&&j>=0)(Q||G)[i][j]+=v};
+ for(let i=0;i<P.N;i++)G[i][i]+=1e-12;
+ P.els.forEach(e=>{const[n1,n2]=e.n;
+  if(e.k==='R'){const g=1/e.v;a(n1,n1,g);a(n2,n2,g);a(n1,n2,-g);a(n2,n1,-g)}
+  else if(e.k==='C'){a(n1,n1,e.v,C);a(n2,n2,e.v,C);a(n1,n2,-e.v,C);a(n2,n1,-e.v,C)}
+  else if(e.k==='L'||e.k==='V'){const r=e.br;a(n1,r,1);a(n2,r,-1);a(r,n1,1);a(r,n2,-1);if(e.k==='L')C[r][r]-=e.v;else b[r]=sc*(e.sin?e.dc+e.sin[1]*Math.sin(2*Math.PI*e.sin[2]*t):e.dc)}
+  else{const v=e.n.map(i=>i<0?0:x[i]),i0=e.f(v),h=1e-6;
+   for(let q=0;q<v.length;q++){const vp=v.slice(),vm=v.slice();vp[q]+=h;vm[q]-=h;const ip=e.f(vp),im=e.f(vm);for(let r=0;r<v.length;r++){const j=(ip[r]-im[r])/(2*h);a(e.n[r],e.n[q],j);i0[r]-=j*v[q]}}
+   e.n.forEach((nr,r)=>{if(nr>=0)b[nr]-=i0[r]})}});
+ return{G,C,b}}
+// [Dr.GG] 高斯消去
+function spSolve(A,b){const n=b.length;for(let i=0;i<n;i++){let p=i;for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];[b[i],b[p]]=[b[p],b[i]];const d=A[i][i]||1e-30;for(let r=i+1;r<n;r++){const f=A[r][i]/d;if(f){for(let c=i;c<n;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}}
+ const x=new Array(n).fill(0);for(let i=n-1;i>=0;i--){let s=b[i];for(let c=i+1;c<n;c++)s-=A[i][c]*x[c];x[i]=s/(A[i][i]||1e-30)}return x}
+// [Dr.GG] 牛頓迭代，電壓每步限幅 1V
+function spNewton(P,x,t,sc,dt,xp){for(let it=0;it<150;it++){const L=spLin(P,x,t,sc);let A=L.G,r=L.b;
+  if(dt){A=A.map((row,i)=>row.map((v,j)=>v+L.C[i][j]/dt));r=r.map((v,i)=>v+L.C[i].reduce((s,c,j)=>s+c*xp[j],0)/dt)}
+  const xn=spSolve(A,r);let m=0;x=x.map((v,i)=>{let d=xn[i]-v;if(i<P.N&&Math.abs(d)>1)d=Math.sign(d);m=Math.max(m,Math.abs(d));return v+d});if(m<1e-6)break}return x}
+// [Dr.GG] 直流工作點
+function spOP(P){let x=new Array(P.M).fill(0);for(let k=1;k<=10;k++)x=spNewton(P,x,0,k/10,0);return x}
+// [Dr.GG] 時域分析
+function spTran(P,x0,f0){const dt=1/(f0*200),T=[],Y=[];let x=x0;for(let s=1;s<=600;s++){x=spNewton(P,x,s*dt,1,dt,x);T.push(s*dt*1e3);Y.push(x)}return{T,Y}}
+// [Dr.GG] 頻率響應
+function spAC(P,xo,src){const L=spLin(P,xo,0,1),M=P.M,F=[],Y=[];for(let k=0;k<100;k++){const f=10*Math.pow(10,4*k/99),w=2*Math.PI*f;
+  const A=Array.from({length:2*M},(_,i)=>Array.from({length:2*M},(_,j)=>{const r=i%M,c=j%M;return i<M?(j<M?L.G[r][c]:-w*L.C[r][c]):(j<M?w*L.C[r][c]:L.G[r][c])})),b=new Array(2*M).fill(0);b[src.br]=1;
+  const x=spSolve(A,b);F.push(f);Y.push(x.slice(0,M).map((v,i)=>Math.hypot(v,x[M+i])))}return{F,Y}}
+
+// [STEAKqwq] 內建範例網表
+const SPEX={ts808:`* TS808-style overdrive
+V1 vcc 0 DC 9
+Vin in 0 SIN(0 0.1 440) AC 1
+R1 vcc vb 10k
+R2 vb 0 10k
+C1 vb 0 10u
+C2 in inp 1u
+RB inp vb 510k
+U1 out inp inv 9 0
+Rg inv g 4.7k
+Cg g vb 47n
+Rf out m 51k
+Rd m inv 100k
+Cf out inv 51p
+D1 out inv
+D2 inv out
+C3 out outc 1u
+RL outc 0 100k`,rc:`* RC 低通，截止頻率約 1 kHz
+V1 in 0 DC 0 SIN(0 1 1000) AC 1
+R1 in out 1.59k
+C1 out 0 100n`};
+// [STEAKqwq] 載入範例
+function spEx(k){$('spT').value=SPEX[k];$('spN').value=k==='ts808'?'inp, outc':'in, out';$('spO').innerHTML=''}
+// [KATO] SPICE 結果繪圖
+function spPlot(S,xl,xt,yt){const cv=$('spC'),r=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*r;cv.height=H*r;const c=cv.getContext('2d');c.setTransform(r,0,0,r,0,0);
+ const tx=getComputedStyle(document.documentElement).getPropertyValue('--tx')||'#888',m={l:46,r:8,t:8,b:30},X=S[0].x.map(v=>xl?Math.log10(v):v),x0=Math.min(...X),x1=Math.max(...X);
+ let y0=Infinity,y1=-Infinity;S.forEach(q=>q.y.forEach(v=>{y0=Math.min(y0,v);y1=Math.max(y1,v)}));if(y1-y0<1e-9){y0-=1;y1+=1}const pd=(y1-y0)*.08;y0-=pd;y1+=pd;
+ const px=v=>m.l+(v-x0)/(x1-x0)*(W-m.l-m.r),py=v=>H-m.b-(v-y0)/(y1-y0)*(H-m.t-m.b);
+ c.font='11px monospace';c.fillStyle=tx;c.strokeStyle='rgba(128,128,128,.3)';
+ for(let i=0;i<=4;i++){const v=y0+(y1-y0)*i/4,y=py(v);c.beginPath();c.moveTo(m.l,y);c.lineTo(W-m.r,y);c.stroke();c.fillText(v.toFixed(y1-y0<10?2:0),2,y+4)}
+ for(let i=0;i<=4;i++){const v=x0+(x1-x0)*i/4;c.fillText(xl?fmtF(Math.pow(10,v)):v.toFixed(2),px(v)-16,H-14)}
+ c.fillText(xt+' / '+yt,m.l,H-2);
+ S.forEach((q,k)=>{c.strokeStyle=['#00c8d6','#ff7043','#9ccc65','#ab47bc'][k%4];c.beginPath();q.y.forEach((v,i)=>{i?c.lineTo(px(X[i]),py(v)):c.moveTo(px(X[i]),py(v))});c.stroke();c.fillStyle=c.strokeStyle;c.fillText(q.n,m.l+6+k*80,m.t+12)})}
+// [RET2L!BC] 執行分析，錯誤顯示在結果區
+function spRun(){const o=$('spO'),cv=$('spC');try{const P=spParse($('spT').value),mode=$('spM').value,ns=$('spN').value.split(/[\s,]+/).filter(Boolean).map(q=>q.toLowerCase()),
+  idx=ns.map(q=>{const i=P.nodes.indexOf(q);if(i<0)throw Error('找不到節點：'+q);return i});
+  const xo=spOP(P);cv.classList.toggle('hide',mode==='op');
+  if(mode==='op'){o.innerHTML=P.nodes.map((q,i)=>O(q,xo[i].toFixed(4)+' V')).join('')+P.els.filter(e=>e.k==='V').map(e=>O('I('+e.name+')',(-xo[e.br]*1e3).toFixed(3)+' mA')).join('');return}
+  if(!idx.length)throw Error('請輸入要觀察的節點');
+  if(mode==='tran'){const sv=P.els.find(e=>e.sin),r=spTran(P,xo,sv?sv.sin[2]:440);spPlot(idx.map((i,k)=>({n:ns[k],x:r.T,y:r.Y.map(x=>x[i])})),0,'ms','V');
+   o.innerHTML=idx.map((i,k)=>{const y=r.Y.slice(400).map(x=>x[i]);return O(ns[k]+' 峰對峰（最後一週期）',(Math.max(...y)-Math.min(...y)).toFixed(3)+' V')}).join('')}
+  else{const src=P.els.find(e=>e.ac);if(!src)throw Error('需要在 V 來源後加上 AC 1');const r=spAC(P,xo,src);
+   spPlot(idx.map((i,k)=>({n:ns[k],x:r.F,y:r.Y.map(x=>20*Math.log10(Math.max(x[i],1e-12)))})),1,'Hz','dB（相對 AC 來源 1V）');
+   o.innerHTML=idx.map((i,k)=>{let b=0;r.Y.forEach((x,j)=>{if(x[i]>r.Y[b][i])b=j});return O(ns[k]+' 最大增益',(20*Math.log10(r.Y[b][idx[k]])).toFixed(1)+' dB @ '+fmtF(r.F[b]))}).join('')}
+ }catch(e){cv.classList.add('hide');o.innerHTML=O('錯誤',e.message)}}
+// [Hazuki Saki] 把 SPICE 時域結果轉成音訊播放（取樣率 48 kHz，播放 1 秒）🎸
+let spAcx=null,spSrc=null,spBusy=false;
+async function spPlay(){const o=$('spO');if(spBusy)return;spBusy=true;
+ try{const P=spParse($('spT').value),nn=$('spN').value.split(/[\s,]+/).filter(Boolean)[0];
+  if(!nn)throw Error('請輸入要播放的節點');const idx=P.nodes.indexOf(nn.toLowerCase());if(idx<0)throw Error('找不到節點：'+nn);
+  const sv=P.els.find(e=>e.sin);if(!sv)throw Error('需要一個 SIN 訊號來源');
+  const sr=48000,n0=4800,n=48000,dt=1/sr;if(sv.sin[2]>sr/10)throw Error('訊號頻率過高，上限約 '+(sr/10)+' Hz');
+  let x=spOP(P);const y=new Float32Array(n);
+  for(let s=1;s<=n0+n;s++){x=spNewton(P,x,s*dt,1,dt,x);if(s>n0)y[s-n0-1]=x[idx];if(s%3000===0){o.innerHTML=O('計算中',Math.round(s/(n0+n)*100)+' %');await new Promise(r=>setTimeout(r))}}
+  let m=0,pk=0;for(let i=0;i<n;i++)m+=y[i];m/=n;for(let i=0;i<n;i++){y[i]-=m;pk=Math.max(pk,Math.abs(y[i]))}
+  const g=pk>1e-9?0.7/pk:0,f=Math.round(sr*.01);for(let i=0;i<n;i++)y[i]*=g*(i<f?i/f:i>n-f?(n-i)/f:1);
+  spAcx=spAcx||new(window.AudioContext||window.webkitAudioContext)();await spAcx.resume();if(spSrc){try{spSrc.stop()}catch(e){}}
+  const bf=spAcx.createBuffer(1,n,sr);bf.copyToChannel(y,0);spSrc=spAcx.createBufferSource();spSrc.buffer=bf;spSrc.connect(spAcx.destination);spSrc.start();
+  o.innerHTML=O('播放中',nn+'，1 秒')+O('原始峰值',pk.toFixed(3)+' V')+O('說明','已去除直流並正規化音量，不代表實際大小')
+ }catch(e){o.innerHTML=O('錯誤',e.message)}finally{spBusy=false}}
+spEx('ts808');
+// [STEAKqwq] 電阻 / 電源 / 延遲計算，函式名稱以 x 開頭 :)
+/* ---------- 電阻 / 電源 / 延遲 計算 ---------- */
+// [STEAKqwq] 電阻值格式化
+const xRs=v=>!isFinite(v)?'—':v>=1e9?+(v/1e9).toPrecision(3)+' GΩ':v>=1e6?+(v/1e6).toPrecision(3)+' MΩ':v>=1e3?+(v/1e3).toPrecision(3)+' kΩ':+v.toPrecision(3)+' Ω';
+// [KATO] 色環顏色表
+const xCOL=[['黑',0,'#111',0],['棕',1,'#7b4a1e',1],['紅',2,'#d32f2f',2],['橙',3,'#f57c00',3],['黃',4,'#fbc02d',4],['綠',5,'#388e3c',5],['藍',6,'#1976d2',6],['紫',7,'#7b1fa2',7],['灰',8,'#757575',8],['白',9,'#f5f5f5',9]];
+const xMUL=[['黑 ×1',1,'#111'],['棕 ×10',10,'#7b4a1e'],['紅 ×100',100,'#d32f2f'],['橙 ×1k',1e3,'#f57c00'],['黃 ×10k',1e4,'#fbc02d'],['綠 ×100k',1e5,'#388e3c'],['藍 ×1M',1e6,'#1976d2'],['紫 ×10M',1e7,'#7b1fa2'],['灰 ×100M',1e8,'#757575'],['白 ×1G',1e9,'#f5f5f5'],['金 ×0.1',.1,'#c9a227'],['銀 ×0.01',.01,'#b0b0b0']];
+const xTOL=[['金 ±5%',5,'#c9a227'],['銀 ±10%',10,'#b0b0b0'],['棕 ±1%',1,'#7b4a1e'],['紅 ±2%',2,'#d32f2f'],['綠 ±0.5%',.5,'#388e3c'],['藍 ±0.25%',.25,'#1976d2'],['紫 ±0.1%',.1,'#7b1fa2'],['灰 ±0.05%',.05,'#757575']];
+(function(){const d=xCOL.map((c,i)=>`<option value="${i}">${c[0]} ${c[1]}</option>`).join('');
+ const m=xMUL.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join(''),t=xTOL.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join('');
+ $('xcSel').innerHTML=`<select id="xc1" onchange="xColor()">${d}</select><select id="xc2" onchange="xColor()">${d}</select><select id="xc3" class="hide" onchange="xColor()">${d}</select><select id="xcM" onchange="xColor()">${m}</select><select id="xcL" onchange="xColor()">${t}</select>`;
+ $('xc1').value=4;$('xc2').value=7;$('xcM').value=2})();
+// [KATO] 色環 → 阻值
+function xColor(){const n=+$('xcT').value;$('xc3').classList.toggle('hide',n!==5);
+ const a=+$('xc1').value,b=+$('xc2').value,c=+$('xc3').value,m=xMUL[+$('xcM').value],t=xTOL[+$('xcL').value];
+ const base=n===5?a*100+b*10+c:a*10+b,v=base*m[1],tl=t[1];
+ const sw=[xCOL[a][2],xCOL[b][2]].concat(n===5?[xCOL[c][2]]:[],[m[2],t[2]]).map(x=>`<span class="sw3" style="background:${x}"></span>`).join('');
+ $('xcO').innerHTML=O('色環',sw)+O('阻值',xRs(v))+O('容差','±'+tl+' %')+O('實際範圍',xRs(v*(1-tl/100))+' ～ '+xRs(v*(1+tl/100)))}
+// [KATO] 阻值 → 4 環色環
+function xVal(){const v=nv('xvR');if(v<=0){$('xvO').innerHTML=O('4 環色環','—');return}
+ let e=Math.floor(Math.log10(v)),m=Math.round(v/Math.pow(10,e-1));if(m>=100){m=10;e++}
+ const x=e-1,mi=xMUL.findIndex(q=>Math.abs(Math.log10(q[1])-x)<1e-9);
+ if(mi<0){$('xvO').innerHTML=O('4 環色環','超出範圍（0.01 Ω ～ 9.9 GΩ）');return}
+ const d1=Math.floor(m/10),d2=m%10,act=m*xMUL[mi][1];
+ $('xvO').innerHTML=O('4 環色環',xCOL[d1][0]+' '+xCOL[d2][0]+' '+xMUL[mi][0].split(' ')[0]+'　<span class="sw3" style="background:'+xCOL[d1][2]+'"></span><span class="sw3" style="background:'+xCOL[d2][2]+'"></span><span class="sw3" style="background:'+xMUL[mi][2]+'"></span>')+O('對應阻值',xRs(act)+(Math.abs(act-v)/v>1e-3?'（近似）':''))}
+// [STEAKqwq] EIA-96 對照表
+const xE96=[100,102,105,107,110,113,115,118,121,124,127,130,133,137,140,143,147,150,154,158,162,165,169,174,178,182,187,191,196,200,205,210,215,221,226,232,237,243,249,255,261,267,274,280,287,294,301,309,316,324,332,340,348,357,365,374,383,392,402,412,422,432,442,453,464,475,487,499,511,523,536,549,562,576,590,604,619,634,649,665,681,698,715,732,750,768,787,806,825,845,866,887,909,931,953,976];
+const xE96M={Z:.001,Y:.01,R:.01,X:.1,S:.1,A:1,B:10,H:10,C:100,D:1e3,E:1e4,F:1e5};
+// [STEAKqwq] 貼片電阻代碼
+function xSmd(){const c=$('xsm').value.trim().toUpperCase();let v=NaN,kind='';
+ if(/^\d{2}[A-Z]$/.test(c)&&xE96M[c[2]]!==undefined&&+c.slice(0,2)>=1&&+c.slice(0,2)<=96){v=xE96[+c.slice(0,2)-1]*xE96M[c[2]];kind='EIA-96（1%）'}
+ else if(/^\d*R\d+$/.test(c)){v=parseFloat(c.replace('R','.'));kind='R 表示小數點'}
+ else if(/^\d{3,4}$/.test(c)){const k=c.length;v=(+c.slice(0,k-1))*Math.pow(10,+c[k-1]);kind=k+' 碼（末位為 10 的次方）'}
+ $('xsO').innerHTML=isFinite(v)?O('阻值',xRs(v))+O('格式',kind):O('阻值','無法辨識')}
+// [STEAKqwq] 串並聯與分壓
+function xDiv(){const a=nv('xdA')*1e3,b=nv('xdB')*1e3,vi=nv('xdV'),l=nv('xdL')*1e3;
+ const b2=l>0?(b*l)/(b+l):b,vo=a+b>0?vi*b/(a+b):0,vl=a+b2>0?vi*b2/(a+b2):0;
+ let h=O('串聯 R1+R2',xRs(a+b))+O('並聯 R1∥R2',a+b>0?xRs(a*b/(a+b)):'—')+O('分壓比 R2/(R1+R2)',a+b>0?(b/(a+b)).toFixed(4)+'（'+(b>0?(20*Math.log10(b/(a+b))).toFixed(2):'−∞')+' dB）':'—')+O('Vout（無負載）',vo.toFixed(3)+' V');
+ if(l>0)h+=O('Vout（接 RL）',vl.toFixed(3)+' V')+O('負載造成誤差',vo>0?((vl-vo)/vo*100).toFixed(1)+' %':'—');
+ $('xdO').innerHTML=h}
+// [Hazuki Saki] 電位器 taper 模型
+function xTaper(t,x){const A=y=>y<=.5?y*.3:.15+(y-.5)*1.7;return t==='B'?x:t==='A'?A(x):1-A(1-x)}
+// [Hazuki Saki] 電位器計算
+function xPot(){const t=$('xpT').value,x=nv('xpX')/100,R=nv('xpR')*1e3,f=xTaper(t,x);
+ $('xpV').textContent=Math.round(x*100)+' %';
+ const row=p=>xRs(xTaper(t,p)*R)+'（'+(xTaper(t,p)*100).toFixed(1)+' %）';
+ $('xpO').innerHTML=O('刮刷對地電阻',xRs(f*R))+O('刮刷對上電阻',xRs((1-f)*R))+O('阻值比例',(f*100).toFixed(1)+' %')+O('當音量控制的衰減',f>0?(20*Math.log10(f)).toFixed(1)+' dB':'−∞')+O('25 % 位置',row(.25))+O('50 % 位置',row(.5))+O('75 % 位置',row(.75))}
+// [Hazuki Saki] Tap 測速紀錄
+let xTaps=[];
+// [Hazuki Saki] BPM 與延遲時間 🎸
+function xBpm(src){if(src==='b'){const b=nv('xbB');$('xbM').value=b>0?+(60000/b).toPrecision(6):0}else{const m=nv('xbM');$('xbB').value=m>0?+(60000/m).toPrecision(5):0}
+ const b=nv('xbB'),q=b>0?60000/b:0,L=[['全音符',4],['二分音符',2],['四分音符',1],['付點八分',.75],['八分音符',.5],['八分三連音',1/3],['十六分音符',.25]];
+ $('xbO').innerHTML=L.map(r=>{const ms=q*r[1];return O(r[0],ms>0?ms.toFixed(1)+' ms · '+(1000/ms).toFixed(2)+' Hz':'—')}).join('')}
+// [Hazuki Saki] Tap 測速
+function xTap(){const n=performance.now();if(xTaps.length&&n-xTaps[xTaps.length-1]>2500)xTaps=[];xTaps.push(n);if(xTaps.length>6)xTaps.shift();
+ if(xTaps.length>1){$('xbB').value=+(60000/((xTaps[xTaps.length-1]-xTaps[0])/(xTaps.length-1))).toFixed(1);xBpm('b')}}
+// [STEAKqwq] 取 E24 標準值
+function xE24(r){const E=[1,1.1,1.2,1.3,1.5,1.6,1.8,2,2.2,2.4,2.7,3,3.3,3.6,3.9,4.3,4.7,5.1,5.6,6.2,6.8,7.5,8.2,9.1],d=Math.pow(10,Math.floor(Math.log10(r)));
+ for(const m of E){if(m*d>=r*(1-1e-9))return m*d}return 10*d}
+// [STEAKqwq] LED 限流電阻
+function xLed(){const s=nv('xlS'),f=nv('xlF'),i=nv('xlI')/1e3;
+ if(i<=0||s<=f){$('xlO').innerHTML=O('結果',i<=0?'電流需大於 0':'電源電壓需大於 Vf');return}
+ const r=(s-f)/i,std=xE24(r),ia=(s-f)/std;
+ $('xlO').innerHTML=O('計算電阻',xRs(r))+O('建議標準值 (E24)',xRs(std))+O('實際電流',(ia*1000).toFixed(2)+' mA')+O('電阻功耗',((s-f)*ia*1000).toFixed(2)+' mW')+O('LED 功耗',(f*ia*1000).toFixed(2)+' mW')}
+// [STEAKqwq] 偏壓 Vref 分壓
+function xVref(){const c=nv('xvC'),a=nv('xvA')*1e3,b=nv('xvB')*1e3,u=nv('xvD')/1e6;
+ if(a+b<=0){$('xvrO').innerHTML=O('結果','—');return}
+ const v=c*b/(a+b),rp=a*b/(a+b),iq=c/(a+b);
+ $('xvrO').innerHTML=O('Vref',v.toFixed(3)+' V（Vcc 的 '+(v/c*100).toFixed(1)+' %）')+O('偏壓點等效電阻',xRs(rp))+O('分壓靜態電流',iq<1e-3?(iq*1e6).toFixed(1)+' µA':(iq*1e3).toFixed(2)+' mA')+O('濾波轉折',u>0&&rp>0?fmtF(1/(2*Math.PI*rp*u)):'無濾波')+O('理想對稱餘裕（單邊）','±'+Math.min(v,c-v).toFixed(2)+' V')}
+// [KATO] 標準阻值查詢 (E12 / E24 / E96)
+const ESER={E12:[1,1.2,1.5,1.8,2.2,2.7,3.3,3.9,4.7,5.6,6.8,8.2],E24:[1,1.1,1.2,1.3,1.5,1.6,1.8,2,2.2,2.4,2.7,3,3.3,3.6,3.9,4.3,4.7,5.1,5.6,6.2,6.8,7.5,8.2,9.1],E96:Array.from({length:96},(_,i)=>+Math.pow(10,i/96).toPrecision(3))};
+function xStd(){const r=nv('ysR')*1e3,k=$('ysS').value;if(!(r>0)){$('ysO').innerHTML=O('結果','電阻需大於 0');return}
+ const d=Math.pow(10,Math.floor(Math.log10(r)));let lo=0,hi=0;
+ for(const m of [...ESER[k],10]){const v=+(m*d).toPrecision(4);if(v<=r*(1+1e-9))lo=v;if(!hi&&v>=r*(1-1e-9))hi=v}
+ const best=Math.abs(r-lo)<=Math.abs(hi-r)?lo:hi,e=v=>((v-r)/r*100).toFixed(2)+' %';
+ $('ysO').innerHTML=O('較小標準值',xRs(lo)+'（'+e(lo)+'）')+O('較大標準值',xRs(hi)+'（'+e(hi)+'）')+O('最接近 ('+k+')',xRs(best)+'（'+e(best)+'）')+O('常見誤差等級',k==='E12'?'±10 %':k==='E24'?'±5 %':'±1 %')}
+// [KATO] 電晶體偏壓 (BJT 分壓偏壓)
+function xBjt(){const V=nv('ybV'),R1=nv('yb1')*1e3,R2=nv('yb2')*1e3,RC=nv('ybC')*1e3,RE=nv('ybE')*1e3,b=nv('ybB'),vbe=+$('ybT').value;
+ if(!(V>0&&R1>0&&R2>0&&RC>0&&RE>=0&&b>0)){$('ybO').innerHTML=O('結果','請填入大於 0 的數值');return}
+ const vth=V*R2/(R1+R2),rth=R1*R2/(R1+R2),ib=(vth-vbe)/(rth+(b+1)*RE);
+ if(ib<=0){$('ybO').innerHTML=O('Vth',vth.toFixed(2)+' V')+O('狀態','截止（Vth 低於 Vbe）');return}
+ let ic=b*ib,ve=(b+1)*ib*RE,vc=V-ic*RC,vce=vc-ve,st=vce<1?'接近飽和':'線性放大區';const ma=x=>(x*1e3).toFixed(2)+' mA';
+ if(vce<0.2){ic=(V-0.2)/(RC+RE);ve=ic*RE;vc=V-ic*RC;vce=vc-ve;st='飽和（Ic 受電源限制，Vce≈0.2 V）'}
+ $('ybO').innerHTML=O('Vb / Ve',(ve+vbe).toFixed(2)+' V / '+ve.toFixed(2)+' V')+O('Vc（集極）',vc.toFixed(2)+' V（Vcc 的 '+(vc/V*100).toFixed(0)+' %）')+O('Ic / Vce',ma(ic)+' / '+vce.toFixed(2)+' V')+O('Rth（基極等效）',xRs(rth))+O('工作區',st)}
+// [Hazuki Saki] 電池續航估算
+function xBat(){const c=nv('xtC'),i=nv('xtI'),w=nv('xtW');
+ if(c<=0||i<=0){$('xtO').innerHTML=O('結果','容量與耗電需大於 0');return}
+ const h=c/i,hp=h*.7;
+ $('xtO').innerHTML=O('理論時數',h.toFixed(1)+' h')+O('實用時數（70%）',hp.toFixed(1)+' h')+O('約可用',w>0?(hp/w).toFixed(1)+' 週（每週 '+w+' h）':'—')+O('耗電等效','每小時 '+i+' mAh')}
+// [KATO] 計算工具分類，需和卡片的 data-cc 對應
+const CCATS=[['all','全部'],['ckt','電路與濾波'],['res','電阻與電位器'],['pwr','電源與偏壓'],['sig','波形與失真'],['unit','單位換算']];
+$('calcCats').innerHTML=CCATS.map(c=>`<button data-c="${c[0]}" onclick="calcCat('${c[0]}')">${c[1]}</button>`).join('');
+function calcCat(c){document.querySelectorAll('#calcCats button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));document.querySelectorAll('#tab-calc .card[data-cc]').forEach(el=>el.classList.toggle('hide',c!=='all'&&el.dataset.cc!==c));calcAll()}
+// [RET2L!BC] 重算所有計算工具
+function calcAll(){cA();cB('f');cC();cD();cE();cF();cG();cH('d');cK();xColor();xVal();xSmd();xDiv();xPot();xBpm('b');xLed();xVref();xBat();xStd();xBjt()}
+
+// [KATO] 預設與分享：localStorage 預設 + 網址 #cfg 分享連結
+/* ---------- 預設與分享 ---------- */
+const PK='bocPresets';
+function pstGet(){try{const a=JSON.parse(localStorage.getItem(PK)||'[]');return Array.isArray(a)?a.filter(x=>x&&typeof x.n==='string'&&typeof x.c==='string'):[]}catch(e){return[]}}
+function pstPut(a){try{localStorage.setItem(PK,JSON.stringify(a));return true}catch(e){return false}}
+function pstMsg(t){const m=$('pstMsg');m.textContent=t;clearTimeout(pstMsg.t);pstMsg.t=setTimeout(()=>m.textContent='',2500)}
+function pstCfg(){return [S.mode,Math.round(S.gain),Math.round(S.tone),Math.round(S.vol),Math.round(S.vin),S.diode,S.src,S.wave].join(',')}
+function pstApply(c){const p=String(c).split(',');if(p.length<8)return false;const [m,g,t,v,i,d,sr,w]=p;
+ const has=(id,x)=>[...$(id).options].some(o=>o.value===x);
+ if(!M[m]||!['silicon','germanium','led'].includes(d)||!has('src',sr)||!has('wW',w))return false;
+ setMode(m);setDiode(d);[g,t,v].forEach((x,j)=>{const n=+x;if(isFinite(n))setKnob(KN[j],n)});
+ const n=+i;if(isFinite(n)){S.vin=Math.min(500,Math.max(20,n));$('vin').value=S.vin}
+ S.src=sr;S.wave=w;syncWave();if(S.playing){stopA();startA()}return true}
+function pstDraw(){const a=pstGet(),b=$('pstList');b.textContent='';if(!a.length){b.textContent='尚未儲存任何預設';return}
+ a.forEach((x,i)=>{const w=document.createElement('span'),l=document.createElement('button'),d=document.createElement('button');w.style.cssText='display:inline-flex;gap:2px';
+  l.className=d.className='btn ghost';l.textContent=x.n;d.textContent='×';d.setAttribute('aria-label','刪除 '+x.n);
+  l.onclick=()=>pstMsg(pstApply(x.c)?'已套用：'+x.n:'預設內容無效');d.onclick=()=>{a.splice(i,1);pstPut(a);pstDraw()};w.append(l,d);b.append(w)})}
+function pstSave(){const n=$('pstName').value.trim().slice(0,20)||('預設 '+(pstGet().length+1)),a=pstGet().filter(x=>x.n!==n);a.push({n,c:pstCfg()});
+ if(pstPut(a)){pstMsg('已儲存：'+n);$('pstName').value='';pstDraw()}else pstMsg('瀏覽器不允許儲存')}
+function pstShare(){const h='#cfg='+encodeURIComponent(pstCfg()),u=location.href.split('#')[0]+h;try{history.replaceState(null,'',h)}catch(e){}
+ (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>pstMsg('連結已複製'),()=>prompt('複製這個連結',u))}
+function pstFromHash(){const m=/[#&]cfg=([^&]+)/.exec(location.hash);if(!m)return;try{if(pstApply(decodeURIComponent(m[1])))pstMsg('已載入分享的設定')}catch(e){}}
+
+// [Hazuki Saki] 啟動
+tab('sim');circ('ts808');calcCat('all');setDiode('silicon');KN.forEach(k=>setKnob(k,S[k[0]]));calcRC();calcOp();setRC(4700,47e-9);setOp(51e3,4700);setMode('ts');rs();draw();pstDraw();pstFromHash();
+</script>
+<!-- (c) BUFFER OVERFLOW CREW | HazukiSaki | KATO | STEAKqwq | RET2L!BC | Dr.GG | BOC_Pedal_Circuit_Lab -->
+</body>
+</html>
