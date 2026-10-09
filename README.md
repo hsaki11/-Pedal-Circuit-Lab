@@ -104,8 +104,8 @@ C1 out 0 100n
 
 From Taiwan
 
-| 成員 | 負責 |
-| --- | --- |
+| 成員 | 負責 |   |
+| --- | --- | --- |
 | KATO  | 外觀、計算工具 | https://github.com/KatoOWO |
 | STEAKqwq | 電路、電阻、範例 | https://github.com/STEAKqwq |
 | Hazuki Saki | 音訊、旋鈕、Delay | https://github.com/hsak11 |
