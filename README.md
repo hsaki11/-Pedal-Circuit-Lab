@@ -106,11 +106,11 @@ From Taiwan
 
 | 成員 | 負責 |
 | --- | --- |
-| KATO | 外觀、計算工具 |
-| STEAKqwq | 電路、電阻、範例 |
-| Hazuki Saki | 音訊、旋鈕、Delay |
-| RET2L!BC | 導覽、解析 |
-| Dr.GG | 求解引擎、波形 |
+| KATO | 外觀、計算工具 | @KatoOWO |
+| STEAKqwq | 電路、電阻、範例 | @STEAKqwq |
+| Hazuki Saki | 音訊、旋鈕、Delay | @hsak11 |
+| RET2L!BC | 導覽、解析 | @RET2L!BC
+| Dr.GG | 求解引擎、波形 | Dr.GG |
 
 ## 📄 授權
 
